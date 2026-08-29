@@ -1,752 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-================================================================================
-  putPatientProblemList — MAXIMAL Reference (every element filled)
-  Project:    NEHR Onboarding — Heart Clinic / MDXcess GCMS
-  Spec ref:   putPatientProblemList_v0.2_(PPL)_20251224.xlsx (Synapxe), Request tab
-              186 element rows. 102 Mandatory + 83 Optional.
-  Codesets:   INT_2_1_Onboarding_CodeSetInventory_v2.29 (Synapxe)
-              skills/nehr-data-mapping/references/nhdd-samples/*.json (NHDD)
-              SNOMED CT Singapore Extension (request from MOH/Synapxe — TBC)
-  Generated:  2026-05-16  (revision 1 — all-fields-filled reference)
-
-  PURPOSE
-  =================
-  A teaching reference, not a transmittable message. Shows every populatable
-  element of putPatientProblemList filled with a realistic example value, plus
-  annotations about Significance, Cardinality, Data Type/Length, and a "what to
-  fill" note.
-
-  Use this to learn the shape of each element. For real transmissions, refer
-  to NEHR_putPatientProblemList_Sample_Mandatory.xml (minimum valid payload)
-  or NEHR_putPatientProblemList_Sample_Full.xml (no annotations, full sample).
-
-  LIST TYPE — HEART CLINIC SCOPE
-  =================
-  Heart Clinic submits listType = "Non-reconciled PPL" only. The other two
-  list types (Reconciled PPL — curated cross-institution view; Visit Diagnosis
-  list — per-visit only) are out of scope for our submissions.
-
-  DELIBERATE INCONSISTENCY NOTE
-  =================
-  Real PPL submissions are either Final (the normal state) OR Cancelled (rare).
-  This file shows BOTH patterns for reference — the reasonForCancellation
-  grouping is populated to demonstrate its shape, but in a typical Final
-  submission this whole grouping is OMITTED. The file also includes FOUR problem
-  entries to demonstrate the four common lifecycle states (Active chronic /
-  Resolved acute / Provisional / Cancelled). In any single real submission, you
-  would have between 1 and N problems reflecting that patient's actual list.
-
-  ANNOTATION FORMAT
-  =================
-  <element>VALUE</element>  <! [SIG] card N..N TypeName(MaxLen) | meaning >
-
-    Significance:  M = Mandatory, O = Optional, C = Conditional Mandatory
-    Cardinality:   1 (exactly 1), 0..1 (zero or one), 0..* (zero or many),
-                   1..2 (exactly one or two)
-    Type:          String(N), String(CLOB), Long(N), Date, DateTime,
-                   Boolean(5), Grouping
-    Meaning:       brief description of what the value represents and source
-
-  EXAMPLE PATIENT
-  =================
-  Mdm Tan Mei Ling — Singapore citizen, Chinese, female, married, Buddhist,
-  Mandarin-speaking. Same patient as the putEvent reference, for continuity.
-  Carries multiple cardiology problems on her list including atrial
-  fibrillation (active chronic), essential hypertension (active chronic),
-  a resolved TIA, a provisional heart-failure assessment, and one entry
-  that was cancelled because it was recorded in error.
-================================================================================
--->
-
-<putPatientProblemList xmlns="http://www.synapxe.sg/nehr/putPatientProblemList">
-                                                                <!-- [M] card 1 Grouping | XML root, one per message -->
-
-
-  <!-- ============================================================ -->
-  <!-- CONTROL HEADER — every message includes this                  -->
-  <!-- ============================================================ -->
-  <controlHeader>                                       <!-- [M] card 1 Grouping | message metadata wrapper -->
-
-    <srcInstitution>9403258</srcInstitution>            <!-- [M] card 1 String(50) | HCI code of the sending clinic. Heart Clinic main = 9403258. -->
-    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>  <!-- [M] card 0..1 String(50) | Full HSCA Licensee number. Format: MOSD/HCI/Service/NNN/YYD. -->
-    <srcApplication>MDX-GCMS</srcApplication>           <!-- [M] card 1 String(50) | Source software identifier. Hardcoded — uppercase, ≤12 chars per Guide. -->
-    <msgID>MDX-GCMS-PPL-20260516-00001</msgID>          <!-- [M] card 1 String(50) | Unique message identifier per send. Generate UUID or app+timestamp+counter. -->
-    <msgSequenceID>1</msgSequenceID>                    <!-- [M] card 1 Long(15) | Monotonic counter scoped to (interface+srcApplication+srcInstitution). Persisted, never resets. -->
-    <msgDateTime>2026-05-16T11:00:00+08:00</msgDateTime>  <!-- [M] card 1 DateTime | Send time. ISO 8601 with +08:00 timezone (required for A&A validation). -->
-
-  </controlHeader>
-
-
-  <!-- ============================================================ -->
-  <!-- PATIENT — demographics + identification                       -->
-  <!-- (byte-identical to the patient segment in putEvent)           -->
-  <!-- ============================================================ -->
-  <patient>                                             <!-- [M] card 1 Grouping | patient demographics wrapper -->
-
-    <identification>                                    <!-- [M] card 1 Grouping | patient identification block -->
-      <id>S1234567A</id>                                <!-- [M] card 0..1 String(20) | Patient ID document number, uppercase. From Tbl_PatientParticular.Patient_NRIC. -->
-      <MRNNumber>MDX-GCMS^13009999</MRNNumber>          <!-- [M] card 1 String(60) | Source MRN, prefixed with srcApplication^. From Tbl_PatientParticular.Reg_No. -->
-      <type>SP</type>                                   <!-- [M] card 0..1 String(128) | NHDD ID type. SP=Pink IC, SB=Blue IC, SH=Birth Cert, SO=FIN, FP=Foreign Passport, MP=Malaysian Passport, NA=Temp/Unknown. -->
-    </identification>
-
-    <name>                                              <!-- [M] card 0..1 Grouping | patient name wrapper -->
-      <value>TAN MEI LING</value>                       <!-- [M] card 0..1 String(128) | Full name as on ID document. Concatenate FirstName + SurName. -->
-      <title>MS</title>                                 <!-- [O] card 0..1 String(10) | Salutation/title. From Tbl_PatientParticular.Salutation. NHDD title code if available. -->
-    </name>
-
-    <aliasName>                                         <!-- [O] card 0..1 Grouping | alternate name (e.g. maiden name) -->
-      <value>CHEN MEI LING</value>                      <!-- [O] card 0..1 String(128) | Alias name. From Tbl_PatientParticular.OtherName if used. -->
-      <title>MS</title>                                 <!-- [O] card 0..1 String(10) | Title for alias name -->
-    </aliasName>
-
-    <contactDetails>                                    <!-- [O] card 0..1 Grouping | contact info wrapper -->
-
-      <address>                                         <!-- [O] card 0..* Grouping | up to one MAIN + one OTHER allowed -->
-        <type>MAIN</type>                               <!-- [M] card 0..1 String(5) | RESTRICTED VALUES: MAIN | OTHER (case-sensitive). Mandatory if address grouping present. -->
-        <streetLine1>BLK 123 #05-67</streetLine1>       <!-- [O] card 0..1 String(75) | First address line. Block + Storey + Unit. -->
-        <streetLine2>HOUGANG AVENUE 8</streetLine2>     <!-- [O] card 0..1 String(75) | Second address line. Street name. -->
-        <streetLine3>HOUGANG GREEN</streetLine3>        <!-- [O] card 0..1 String(75) | Third line (estate name). Often omitted in SG. -->
-        <streetLine4>NEAR HOUGANG MRT</streetLine4>     <!-- [O] card 0..1 String(75) | Fourth line (landmark). Almost always omitted. -->
-        <city>SINGAPORE</city>                          <!-- [O] card 0..1 String(50) | City name. -->
-        <country>AU</country>                           <!-- [O] card 0..1 String(50) | NHDD country code. AU=SINGAPORE, AR=MALAYSIA, AI=CHINA, etc. (Country.json) -->
-        <postalCode>530123</postalCode>                 <!-- [O] card 0..1 String(10) | 6-digit Singapore postal code. -->
-      </address>
-
-      <phone>                                           <!-- [O] card 0..* Grouping | up to one HOME + one MOBILE + one WORK allowed -->
-        <type>MOBILE</type>                             <!-- [M] card 0..1 String(8) | RESTRICTED VALUES: HOME | MOBILE | WORK (case-sensitive). Mandatory if phone grouping present. -->
-        <countryCode>65</countryCode>                   <!-- [O] card 0..1 String(50) | International dialling code. SG = 65. -->
-        <areaCode>0</areaCode>                          <!-- [O] card 0..1 String(50) | Area/region code. Omit for SG mobiles (no area code). -->
-        <phoneNumber>91234567</phoneNumber>             <!-- [M] card 0..1 String(40) | Phone number digits. Mandatory if phone grouping present. -->
-        <extensionNumber>1234</extensionNumber>         <!-- [O] card 0..1 String(50) | Extension. Omit for mobile/home; use for office. -->
-      </phone>
-
-    </contactDetails>
-
-    <dateOfBirth>1985-08-15</dateOfBirth>               <!-- [M] card 0..1 Date | YYYY-MM-DD. Year-only DOB defaults to YYYY-01-01 per Guide. -->
-    <countryOfBirth>AU</countryOfBirth>                 <!-- [O] card 0..1 String(50) | NHDD country code. AU = Singapore (born in SG). -->
-    <gender>C</gender>                                  <!-- [M] card 0..1 String(128) | NHDD gender. C=Female, D=Male, E=Unknown (per Gender.json). -->
-    <emailAddress>tan.meiling@example.com</emailAddress>  <!-- [O] card 0..1 String(128) | Email address. -->
-    <nationality>EW</nationality>                       <!-- [O] card 0..1 String(128) | NHDD nationality. EW=Singapore Citizen, EI=Chinese, ER=Malaysian, etc. (Nationality.json) -->
-    <race>HE</race>                                     <!-- [M] card 0..1 String(128) | NHDD race. HE=Chinese, HL=Malay, HI=Indian, HG=Eurasian, HK=Japanese, etc. (Race.json) -->
-    <residencyStatus>X</residencyStatus>                <!-- [O] card 0..1 String(128) | NHDD residency. X=Citizen, V=PR, Q=Alien, T=Unknown, W=Not Applicable (Residential_Status.json) -->
-    <language>DI</language>                             <!-- [O] card 0..1 String(128) | NHDD language. DA=English, DI=Mandarin, DJ=Malay, DM=Tamil, etc. (Language.json) -->
-    <maritalStatus>7</maritalStatus>                    <!-- [O] card 0..1 String(128) | NHDD marital status. 6=Single, 7=Married, 8=Widowed, 9=Divorced (Marital_status.json) -->
-    <occupation>30020</occupation>                      <!-- [O] card 0..1 String(128) | NHDD occupation code. 30020=Secretary, etc. (Occupation.json) -->
-    <VIPFlag>N</VIPFlag>                                <!-- [O] card 0..1 String(1) | Y or N. NEHR sources from MHA — typically omit unless source has the data. -->
-    <VVIPFlag>N</VVIPFlag>                              <!-- [O] card 0..1 String(1) | Y or N. NEHR currently does not capture VVIP. Typically omit. -->
-    <!-- <dateOfDeath>2024-12-31</dateOfDeath> -->      <!-- [O] card 0..1 Date | YYYY-MM-DD. NEHR sources from MHA. Omit when patient is alive. -->
-    <deathIndicator>N</deathIndicator>                  <!-- [O] card 0..1 String(1) | Y=dead, N=alive. NEHR sources from MHA — typically omit. -->
-    <religion>Z</religion>                              <!-- [O] card 0..1 String(128) | NHDD religion. Z=Buddhist, Y=Hindu, X=Muslim, V=Christian (Religion.json) -->
-
-    <nextOfKin>                                         <!-- [O] card 0..* Grouping | up to multiple NOKs (one per row in Tbl_Patient_NextOfKin) -->
-      <name>TAN WEI MING</name>                         <!-- [O] card 0..1 String(140) | Full name of NOK. Concatenate FirstName + SurName from Tbl_Patient_NextOfKin. -->
-      <phone>98765432</phone>                           <!-- [O] card 0..1 String(80) | Single phone string. Pick first non-null among Mobile/Home/Office in Tbl_Patient_NextOfKin. -->
-      <relationship>FFB002</relationship>               <!-- [O] card 0..1 String(30) | NHDD relationship. FFA001=Spouse, FFB002=Husband, FFC003=Wife, FFD004=Mother, FFE005=Father, FFH008=Son, FFI009=Daughter, etc. (NextOfKin.json) -->
-      <email>weiming.tan@example.com</email>            <!-- [O] card 0..1 String(100) | NOK email. From Tbl_Patient_NextOfKin.Email. -->
-    </nextOfKin>
-
-  </patient>
-
-
-  <!-- ============================================================ -->
-  <!-- PROBLEM LIST — the list itself                                -->
-  <!-- ============================================================ -->
-  <problemList>                                         <!-- [M] card 0..1 Grouping | exactly one problemList per message -->
-
-    <recordIdentifier>RK-PPL-MDX-GCMS-13009999</recordIdentifier>
-                                                        <!-- [M] card 1 String(50) | PER-PATIENT identifier — NOT per-message. Same value for every PPL submission for this patient, forever. Recommended derivation: "RK-PPL-" + srcApplication + "-" + Reg_No. -->
-    <eventId>000583cd-4522-4c40-8724-62762d6a7f15</eventId>
-                                                        <!-- [M] card 0..1 String(1995) | Must EXACTLY match event.id of the putEvent for the visit at which this PPL was updated. Cross-ref Tbl_PatientAppointment.Appointment_ID. -->
-    <userInstitution>9403258</userInstitution>          <!-- [M] card 1 String(50) | HCI code of the clinic creating/updating the PPL. Priority: HCI code > MOH licensee > abbreviated name. -->
-
-    <listType>                                          <!-- [M] card 1 Grouping | list type wrapper -->
-      <code>Non-reconciled PPL</code>                   <!-- [M] card 0..1 String(50) | Heart Clinic fixed value. Other values: "Reconciled PPL" (out of scope), "Visit Diagnosis list" (out of scope). See DISCREPANCY note below. -->
-      <codingSchemeName>Problem_List_Status_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Codeset name per spec. NB: the codeset name says "Status" though this field is listType — that is the spec's wording (not a typo). -->
-      <codingSchemeVersion>2.29</codingSchemeVersion>   <!-- [O] card 0..1 String(50) | Codeset Inventory version. Typically omit. -->
-      <textDescription>Non-reconciled Patient Problem List</textDescription>  <!-- [M] card 0..1 String(CLOB) | Human-readable label matching the code. -->
-      <!-- DISCREPANCY: Inventory v2.29 Problem_List_Status_(NEHR) sheet contains only Final/Cancelled/Amended — the value "Non-reconciled PPL" is not in the codeset. Likely a separate Problem_List_Type_(NEHR) codeset is intended but not yet published. Confirm with Synapxe SPOC before production. -->
-    </listType>
-
-    <listStatus>                                        <!-- [M] card 1 Grouping | list-level lifecycle status -->
-      <code>Final</code>                                <!-- [M] card 0..1 String(50) | Problem_List_Status_(NEHR). Values: Final | Cancelled | Amended. Default to "Final" on every submission. Use "Cancelled" to retract entire list. -->
-      <codingSchemeName>Problem_List_Status_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Same codeset as listType. -->
-      <codingSchemeVersion>2.29</codingSchemeVersion>   <!-- [O] card 0..1 String(50) | Typically omit. -->
-      <textDescription>Final</textDescription>          <!-- [M] card 0..1 String(CLOB) | Human-readable label. -->
-    </listStatus>
-
-    <reasonForCancellation>                             <!-- [O] card 0..1 Grouping | populate ONLY when listStatus = Cancelled. Omit entirely for Final/Amended. Shown here for reference. -->
-      <code>OTHER</code>                                <!-- [O] card 0..1 String(50) | No NEHR codeset — local code permitted. -->
-      <codingSchemeName>LOCAL_CANCEL_REASON</codingSchemeName>  <!-- [O] card 0..1 String(50) | Local scheme name if a code is supplied. -->
-      <codingSchemeVersion>1.0</codingSchemeVersion>    <!-- [O] card 0..1 String(50) | Local version. -->
-      <textDescription>List recreated under new patient ID after merge.</textDescription>  <!-- [M] card 0..1 String(CLOB) | Mandatory if grouping is present. Free-text reason. -->
-    </reasonForCancellation>
-
-    <remarks>Routine cardiology review on 16 May 2026. Problem list refreshed; no items added or resolved at this visit.</remarks>
-                                                        <!-- [O] card 0..1 String(2000) | List-level free-text remarks. Most clinics leave blank. -->
-
-    <context>                                           <!-- [O] card 0..1 Grouping | workflow context in which PPL was updated -->
-      <code>6</code>                                    <!-- [M] card 0..1 String(50) | Problem_List_Context_(NEHR). 1=Admission, 2=Discharge, 3=Transfer, 5=Outpatient Visit (Pre-Consultation), 6=Outpatient Visit (Post-consultation), 7=Home Visit. Heart Clinic typical = 6. Mandatory if grouping present. -->
-      <codingSchemeName>Problem_List_Context_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Mandatory if grouping present. -->
-      <codingSchemeVersion>2.29</codingSchemeVersion>   <!-- [O] card 0..1 String(50) | Typically omit. -->
-      <textDescription>Outpatient Visit (Post-consultation)</textDescription>  <!-- [M] card 0..1 String(CLOB) | Mandatory if grouping present. -->
-    </context>
-
-    <lastUpdatedBy>                                     <!-- [M] card 0..1 Grouping | doctor who last touched the list as a whole -->
-      <id>04173D</id>                                   <!-- [M] card 0..1 String(1919) | MCR. From Tbl_Doctor.RegNo via consultation chain. -->
-      <name>Ruth Kam</name>                             <!-- [M] card 0..1 String(80) | Doctor's full name. From Tbl_Doctor.First_Name + Sur_Name. -->
-    </lastUpdatedBy>
-
-    <lastUpdatedDateTime>2026-05-16T10:55:00+08:00</lastUpdatedDateTime>
-                                                        <!-- [M] card 0..1 DateTime | When the list was last touched. Derive: MAX(updatedDateTime) across all problem entries. -->
-
-
-    <!-- ============================================================ -->
-    <!-- PROBLEM #1 — ACTIVE CHRONIC (atrial fibrillation)             -->
-    <!-- The typical Heart Clinic case: long-standing chronic condition -->
-    <!-- under ongoing management. status=Active, conditionType=Chronic -->
-    <!-- ============================================================ -->
-    <problem>                                           <!-- [M] card 0..* Grouping | one entry per active or recently-resolved diagnosis -->
-
-      <id>RK22001234-001</id>                           <!-- [M] card 0..1 String(50) | Unique within this patient's list. Stable across updates of the same problem. From Tbl_Patient_Diagnosis.Generated_ID. -->
-      <sequenceNo>1</sequenceNo>                        <!-- [M] card 0..1 String(11) | Display order. row_number() at send time. Numeric value despite String type. -->
-
-      <category>                                        <!-- [M] card 0..1 Grouping | Problem vs Diagnosis distinction -->
-        <code>2</code>                                  <!-- [M] card 0..1 String(50) | Problem_Category_(NEHR). 1=Problem (general issue), 2=Diagnosis (named condition), 6=Unclassified. Heart Clinic default = 2. -->
-        <codingSchemeName>Problem_Category_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Hardcoded scheme name. -->
-        <codingSchemeVersion>2.29</codingSchemeVersion> <!-- [O] card 0..1 String(50) | Typically omit. -->
-        <textDescription>Diagnosis</textDescription>    <!-- [M] card 0..1 String(CLOB) | Description matching the code. -->
-      </category>
-
-      <healthDomain>                                    <!-- [O] card 0..1 Grouping | optional health-domain label. No NEHR codeset. -->
-        <code>CV</code>                                 <!-- [O] card 0..1 String(50) | Local code. -->
-        <codingSchemeName>LOCAL_HEALTH_DOMAIN</codingSchemeName>  <!-- [O] card 0..1 String(50) | Local scheme. -->
-        <codingSchemeVersion>1.0</codingSchemeVersion>  <!-- [O] card 0..1 String(50) | Local version. -->
-        <textDescription>Cardiovascular</textDescription>  <!-- [M] card 0..1 String(CLOB) | Mandatory if grouping present. -->
-      </healthDomain>
-
-      <problemName>                                     <!-- [M] card 0..1 Grouping | THE DIAGNOSIS itself — SNOMED CT coded -->
-        <code>49436004</code>                           <!-- [M] card 0..1 String(50) | SNOMED CT concept ID. Numeric, no leading zeros. From SNOMED CT picker output. -->
-        <codingSchemeName>SNOMED-CT</codingSchemeName>  <!-- [M] card 0..1 String(50) | Exact string per spec — note the hyphen. -->
-        <codingSchemeVersion>SG-Extension-2026-04</codingSchemeVersion>  <!-- [M] card 0..1 String(50) | MANDATORY here (unlike most coded fields). SNOMED concepts can be retired between releases — pin the version. -->
-        <textDescription>Atrial fibrillation (disorder)</textDescription>  <!-- [M] card 0..1 String(CLOB) | SNOMED Fully Specified Name — always ends with semantic tag in parentheses. -->
-      </problemName>
-
-      <severity>                                        <!-- [O] card 0..1 Grouping | severity grade. Omit unless explicitly assigned. -->
-        <code>Moderate</code>                           <!-- [M] card 0..1 String(50) | Severity_(NEHR). Values: Fatal | Mild | Moderate | Severe. Mandatory if grouping present. -->
-        <codingSchemeName>Severity_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Mandatory if grouping present. -->
-        <codingSchemeVersion>2.29</codingSchemeVersion> <!-- [O] card 0..1 String(50) | Typically omit. -->
-        <textDescription>Moderate</textDescription>     <!-- [M] card 0..1 String(CLOB) | Mandatory if grouping present. -->
-      </severity>
-
-      <conditionType>                                   <!-- [O] card 0..1 Grouping | acute vs chronic -->
-        <code>Chronic</code>                            <!-- [M] card 0..1 String(50) | Condition_Type_(NEHR). Values: Acute | Chronic. Mandatory if grouping present. -->
-        <codingSchemeName>Condition_Type_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Mandatory if grouping present. -->
-        <codingSchemeVersion>2.29</codingSchemeVersion> <!-- [O] card 0..1 String(50) | Typically omit. -->
-        <textDescription>Chronic</textDescription>      <!-- [M] card 0..1 String(CLOB) | Mandatory if grouping present. -->
-      </conditionType>
-
-      <status>                                          <!-- [M] card 0..1 Grouping | per-problem lifecycle -->
-        <code>Active</code>                             <!-- [M] card 0..1 String(50) | Diagnosis_Status_(NEHR). Values: Active | Inactive | Resolved | Provisional | Cancelled | Not Applicable. -->
-        <codingSchemeName>Diagnosis_Status_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Hardcoded scheme name. -->
-        <codingSchemeVersion>2.29</codingSchemeVersion> <!-- [O] card 0..1 String(50) | Typically omit. -->
-        <textDescription>Active</textDescription>       <!-- [M] card 0..1 String(CLOB) | Description matching the code. -->
-      </status>
-
-      <state>                                           <!-- [O] card 0..1 Grouping | confirmation level — separate axis from status -->
-        <code>Final</code>                              <!-- [M] card 0..1 String(50) | Diagnosis_State_(NEHR). Values: Provisional | Final. Mandatory if grouping present. -->
-        <codingSchemeName>Diagnosis_State_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Mandatory if grouping present. -->
-        <codingSchemeVersion>2.29</codingSchemeVersion> <!-- [O] card 0..1 String(50) | Typically omit. -->
-        <textDescription>Final</textDescription>        <!-- [M] card 0..1 String(CLOB) | Mandatory if grouping present. -->
-      </state>
-
-      <onsetDate>2024-03-15</onsetDate>                 <!-- [O] card 0..1 String(50) | When the condition started. Often imprecise (could be years ago). YYYY-MM-DD recommended; the spec allows String type for partial dates. -->
-      <onsetAge>39</onsetAge>                           <!-- [O] card 0..1 String(50) | Alternative to onsetDate when only the patient's age-at-onset is known. Skip if onsetDate is populated. -->
-      <onsetAgeUOM>                                     <!-- [O] card 0..1 Grouping | Unit of onsetAge -->
-        <code>year</code>                               <!-- [M] card 0..1 String(50) | Age_UOM_(NEHR). Values: day | month | year. Mandatory if grouping present. -->
-        <codingSchemeName>Age_UOM_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Mandatory if grouping present. -->
-        <codingSchemeVersion>2.29</codingSchemeVersion> <!-- [O] card 0..1 String(50) | Typically omit. -->
-        <textDescription>year</textDescription>         <!-- [M] card 0..1 String(CLOB) | Mandatory if grouping present. -->
-      </onsetAgeUOM>
-      <occurenceDate>2024-03-15</occurenceDate>         <!-- [O] card 0..1 String(50) | When the diagnosis was first recorded by a clinician — typically the consultation date. NB: spec spelling is "occurence" (sic). -->
-
-      <!-- For active chronic problems, abatementDate stays unpopulated. -->
-      <!-- <abatementDate>...</abatementDate>      -->  <!-- [O] card 0..1 String(50) | Populate when status=Resolved/Inactive. -->
-      <!-- <abatementAge>...</abatementAge>        -->  <!-- [O] card 0..1 String(50) | Alternative to abatementDate. -->
-      <!-- <abatementAgeUOM>...</abatementAgeUOM>  -->  <!-- [O] card 0..1 Grouping | UOM for abatementAge. Same Age_UOM_(NEHR) codeset as onsetAgeUOM. -->
-
-      <clinicalStageGrade>                              <!-- [O] card 0..1 Grouping | clinical staging. No NEHR codeset — free text inside coded structure. -->
-        <code>II</code>                                 <!-- [O] card 0..1 String(50) | Local code, e.g. "II" for a NYHA class. -->
-        <codingSchemeName>NYHA</codingSchemeName>       <!-- [O] card 0..1 String(50) | Local scheme name. -->
-        <codingSchemeVersion>1994</codingSchemeVersion> <!-- [O] card 0..1 String(50) | Local version. -->
-        <textDescription>NYHA Class II</textDescription>  <!-- [M] card 0..1 String(CLOB) | Free-text staging label. Mandatory if grouping present. -->
-      </clinicalStageGrade>
-
-      <serviceSpecialty>                                <!-- [M] card 0..1 Grouping | treating specialty -->
-        <code>NEHR_SS_0002</code>                       <!-- [M] card 0..1 String(50) | Service_Specialty_(NEHR). NEHR_SS_0002=Cardiology. Hardcode for Heart Clinic. -->
-        <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Same codeset as putEvent. -->
-        <codingSchemeVersion>2.29</codingSchemeVersion> <!-- [O] card 0..1 String(50) | Typically omit. -->
-        <textDescription>Cardiology</textDescription>   <!-- [M] card 0..1 String(CLOB) | Description matching the code. -->
-      </serviceSpecialty>
-
-      <notes>Diagnosed on ECG during workup for palpitations. On rate control + anticoagulation. Symptomatic improvement noted at this review.</notes>
-                                                        <!-- [O] card 0..1 String(CLOB) | Free-text clinical notes about THIS diagnosis. Maps to existing Tbl_Patient_Diagnosis.Description. -->
-
-      <institution>9403258</institution>                <!-- [M] card 0..1 String(50) | HCI of the institution that owns this entry. Translate Tbl_Patient_Diagnosis.Branch → HCI. -->
-      <sourceOfOrigin>MDX-GCMS</sourceOfOrigin>         <!-- [M] card 0..1 String(50) | Source software name. Matches srcApplication. -->
-
-      <createdBy>                                       <!-- [M] card 0..1 Grouping | who first entered this diagnosis -->
-        <id>04173D</id>                                 <!-- [M] card 0..1 String(1919) | MCR. Derive from Tbl_PatientConsultation.Doctor_ID via Consultation_ID. -->
-        <name>Ruth Kam</name>                           <!-- [M] card 0..1 String(80) | Doctor's name. -->
-        <institution>9403258</institution>              <!-- [M] card 0..1 String(50) | HCI of the doctor at time of creation. -->
-      </createdBy>
-      <createdDateTime>2024-03-15T10:30:00+08:00</createdDateTime>
-            
-      <updatedBy>                                       <!-- [M] card 0..1 Grouping | who most recently updated this entry -->
-        <id>04173D</id>                                 <!-- [M] card 0..1 String(1919) | MCR. Workaround for missing column: latest Tbl_Patient_Diagnosis_tracking row, OR add a new UpdatedBy_Doctor_ID column. -->
-        <name>Ruth Kam</name>                           <!-- [M] card 0..1 String(80) | Doctor's name. -->
-        <institution>9403258</institution>              <!-- [M] card 0..1 String(50) | HCI. -->
-      </updatedBy>
-      <updatedDateTime>2026-05-16T10:55:00+08:00</updatedDateTime> <!-- [M] card 0..1 DateTime | Most recent update datetime. If no edits since creation, equals createdDateTime. -->
-    </problem>
-
-
-    <!-- ============================================================ -->
-    <!-- PROBLEM #2 — ACTIVE CHRONIC (essential hypertension)          -->
-    <!-- Compact form — minimum mandatory + a few optional fields      -->
-    <!-- to show the typical shape of an entry without staging or NOK  -->
-    <!-- ============================================================ -->
-    <problem>                                           <!-- [M] card 0..* Grouping -->
-
-      <id>RK22001234-002</id>                           <!-- [M] card 0..1 String(50) -->
-      <sequenceNo>2</sequenceNo>                        <!-- [M] card 0..1 String(11) -->
-
-      <category>                                        <!-- [M] card 0..1 Grouping -->
-        <code>2</code>                                  <!-- [M] card 0..1 String(50) | Diagnosis -->
-        <codingSchemeName>Problem_Category_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Diagnosis</textDescription>    <!-- [M] card 0..1 String(CLOB) -->
-      </category>
-
-      <problemName>                                     <!-- [M] card 0..1 Grouping | SNOMED CT -->
-        <code>38341003</code>                           <!-- [M] card 0..1 String(50) | Essential hypertension -->
-        <codingSchemeName>SNOMED-CT</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <codingSchemeVersion>SG-Extension-2026-04</codingSchemeVersion>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Essential hypertension (disorder)</textDescription>  <!-- [M] card 0..1 String(CLOB) -->
-      </problemName>
-
-      <conditionType>                                   <!-- [O] card 0..1 Grouping -->
-        <code>Chronic</code>                            <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Condition_Type_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Chronic</textDescription>      <!-- [M] card 0..1 String(CLOB) -->
-      </conditionType>
-
-      <status>                                          <!-- [M] card 0..1 Grouping -->
-        <code>Active</code>                             <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Diagnosis_Status_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Active</textDescription>       <!-- [M] card 0..1 String(CLOB) -->
-      </status>
-
-      <onsetDate>2022-11-01</onsetDate>                 <!-- [O] card 0..1 String(50) -->
-      <occurenceDate>2022-11-01</occurenceDate>         <!-- [O] card 0..1 String(50) -->
-
-      <serviceSpecialty>                                <!-- [M] card 0..1 Grouping -->
-        <code>NEHR_SS_0002</code>                       <!-- [M] card 0..1 String(50) | Cardiology -->
-        <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Cardiology</textDescription>   <!-- [M] card 0..1 String(CLOB) -->
-      </serviceSpecialty>
-
-      <institution>9403258</institution>                <!-- [M] card 0..1 String(50) -->
-      <sourceOfOrigin>MDX-GCMS</sourceOfOrigin>         <!-- [M] card 0..1 String(50) -->
-
-      <createdBy>                                       <!-- [M] card 0..1 Grouping -->
-        <id>04173D</id>
-        <name>Ruth Kam</name>
-        <institution>9403258</institution>
-      </createdBy>
-      <createdDateTime>2022-11-01T09:15:00+08:00</createdDateTime>  <!-- [M] card 0..1 DateTime -->
-      
-      <updatedBy>                                       <!-- [M] card 0..1 Grouping -->
-        <id>04173D</id>
-        <name>Ruth Kam</name>
-        <institution>9403258</institution>
-      </updatedBy>
-      <updatedDateTime>2022-11-01T09:15:00+08:00</updatedDateTime>  <!-- [M] card 0..1 DateTime -->
-
-    </problem>
-
-    <!-- ============================================================ -->
-    <!-- PROBLEM #3 — RESOLVED ACUTE (transient ischaemic attack)      -->
-    <!-- Demonstrates: status=Resolved + abatementDate                  -->
-    <!-- An acute event has self-resolved; we keep it on the list for   -->
-    <!-- historical visibility but mark it Resolved.                    -->
-    <!-- ============================================================ -->
-    <problem>                                           <!-- [M] card 0..* Grouping -->
-
-      <id>RK22001234-003</id>                           <!-- [M] card 0..1 String(50) -->
-      <sequenceNo>3</sequenceNo>                        <!-- [M] card 0..1 String(11) -->
-
-      <category>                                        <!-- [M] card 0..1 Grouping -->
-        <code>2</code>                                  <!-- [M] card 0..1 String(50) | Diagnosis -->
-        <codingSchemeName>Problem_Category_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Diagnosis</textDescription>    <!-- [M] card 0..1 String(CLOB) -->
-      </category>
-
-      <problemName>                                     <!-- [M] card 0..1 Grouping | SNOMED CT -->
-        <code>266257000</code>                          <!-- [M] card 0..1 String(50) | Transient ischemic attack -->
-        <codingSchemeName>SNOMED-CT</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <codingSchemeVersion>SG-Extension-2026-04</codingSchemeVersion>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Transient ischemic attack (disorder)</textDescription>  <!-- [M] card 0..1 String(CLOB) -->
-      </problemName>
-
-      <severity>                                        <!-- [O] card 0..1 Grouping -->
-        <code>Moderate</code>                           <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Severity_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Moderate</textDescription>     <!-- [M] card 0..1 String(CLOB) -->
-      </severity>
-
-      <conditionType>                                   <!-- [O] card 0..1 Grouping -->
-        <code>Acute</code>                              <!-- [M] card 0..1 String(50) | Acute (one-off event) -->
-        <codingSchemeName>Condition_Type_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Acute</textDescription>        <!-- [M] card 0..1 String(CLOB) -->
-      </conditionType>
-
-      <status>                                          <!-- [M] card 0..1 Grouping -->
-        <code>Resolved</code>                           <!-- [M] card 0..1 String(50) | Condition has cleared. -->
-        <codingSchemeName>Diagnosis_Status_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Resolved</textDescription>     <!-- [M] card 0..1 String(CLOB) -->
-      </status>
-
-      <state>                                           <!-- [O] card 0..1 Grouping -->
-        <code>Final</code>                              <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Diagnosis_State_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Final</textDescription>        <!-- [M] card 0..1 String(CLOB) -->
-      </state>
-
-      <onsetDate>2025-09-02</onsetDate>                 <!-- [O] card 0..1 String(50) -->
-      <occurenceDate>2025-09-02</occurenceDate>         <!-- [O] card 0..1 String(50) -->
-      <abatementDate>2025-09-04</abatementDate>         <!-- [O] card 0..1 String(50) | When the condition resolved. Populate when status=Resolved/Inactive. -->
-
-      <serviceSpecialty>                                <!-- [M] card 0..1 Grouping -->
-        <code>NEHR_SS_0002</code>                       <!-- [M] card 0..1 String(50) | Cardiology -->
-        <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Cardiology</textDescription>   <!-- [M] card 0..1 String(CLOB) -->
-      </serviceSpecialty>
-
-      <notes>Self-resolved within 48 hours. No residual deficit on examination. Continued on antiplatelet therapy.</notes>
-                                                        <!-- [O] card 0..1 String(CLOB) -->
-
-      <institution>9403258</institution>                <!-- [M] card 0..1 String(50) -->
-      <sourceOfOrigin>MDX-GCMS</sourceOfOrigin>         <!-- [M] card 0..1 String(50) -->
-
-      <createdBy>                                       <!-- [M] card 0..1 Grouping -->
-        <id>04173D</id>
-        <name>Ruth Kam</name>
-        <institution>9403258</institution>
-      </createdBy>
-      <createdDateTime>2025-09-02T11:15:00+08:00</createdDateTime>  <!-- [M] card 0..1 DateTime -->
-
-      <updatedBy>                                       <!-- [M] card 0..1 Grouping -->
-        <id>04173D</id>
-        <name>Ruth Kam</name>
-        <institution>9403258</institution>
-      </updatedBy>
-      <updatedDateTime>2025-09-04T09:00:00+08:00</updatedDateTime>  <!-- [M] card 0..1 DateTime -->
-
-    </problem>
-
-
-    <!-- ============================================================ -->
-    <!-- PROBLEM #4 — PROVISIONAL (heart failure pending workup)        -->
-    <!-- Demonstrates: status=Provisional + state=Provisional. Used     -->
-    <!-- when a doctor suspects a condition but has not yet confirmed.  -->
-    <!-- Will transition to status=Active + state=Final after echo.     -->
-    <!-- ============================================================ -->
-    <problem>                                           <!-- [M] card 0..* Grouping -->
-
-      <id>RK22001234-004</id>                           <!-- [M] card 0..1 String(50) -->
-      <sequenceNo>4</sequenceNo>                        <!-- [M] card 0..1 String(11) -->
-
-      <category>                                        <!-- [M] card 0..1 Grouping -->
-        <code>2</code>                                  <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Problem_Category_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Diagnosis</textDescription>    <!-- [M] card 0..1 String(CLOB) -->
-      </category>
-
-      <problemName>                                     <!-- [M] card 0..1 Grouping | SNOMED CT -->
-        <code>84114007</code>                           <!-- [M] card 0..1 String(50) | Heart failure -->
-        <codingSchemeName>SNOMED-CT</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <codingSchemeVersion>SG-Extension-2026-04</codingSchemeVersion>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Heart failure (disorder)</textDescription>  <!-- [M] card 0..1 String(CLOB) -->
-      </problemName>
-
-      <conditionType>                                   <!-- [O] card 0..1 Grouping -->
-        <code>Chronic</code>                            <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Condition_Type_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Chronic</textDescription>      <!-- [M] card 0..1 String(CLOB) -->
-      </conditionType>
-
-      <status>                                          <!-- [M] card 0..1 Grouping -->
-        <code>Provisional</code>                        <!-- [M] card 0..1 String(50) | Diagnosis suspected, awaiting confirmation. -->
-        <codingSchemeName>Diagnosis_Status_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Provisional</textDescription>  <!-- [M] card 0..1 String(CLOB) -->
-      </status>
-
-      <state>                                           <!-- [O] card 0..1 Grouping -->
-        <code>Provisional</code>                        <!-- [M] card 0..1 String(50) | Diagnosis not yet confirmed (e.g. awaiting echocardiogram). -->
-        <codingSchemeName>Diagnosis_State_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Provisional</textDescription>  <!-- [M] card 0..1 String(CLOB) -->
-      </state>
-
-      <occurenceDate>2026-05-16</occurenceDate>         <!-- [O] card 0..1 String(50) | First raised at today's visit. -->
-
-      <serviceSpecialty>                                <!-- [M] card 0..1 Grouping -->
-        <code>NEHR_SS_0002</code>                       <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Cardiology</textDescription>   <!-- [M] card 0..1 String(CLOB) -->
-      </serviceSpecialty>
-
-      <notes>Suspected on basis of exertional dyspnoea + leg oedema. Echocardiogram scheduled. Update on next visit pending workup.</notes>
-                                                        <!-- [O] card 0..1 String(CLOB) -->
-
-      <institution>9403258</institution>                <!-- [M] card 0..1 String(50) -->
-      <sourceOfOrigin>MDX-GCMS</sourceOfOrigin>         <!-- [M] card 0..1 String(50) -->
-
-      <createdBy>                                       <!-- [M] card 0..1 Grouping -->
-        <id>04173D</id>
-        <name>Ruth Kam</name>
-        <institution>9403258</institution>
-      </createdBy>
-      <createdDateTime>2026-05-16T10:45:00+08:00</createdDateTime>  <!-- [M] card 0..1 DateTime -->
-
-      <updatedBy>                                       <!-- [M] card 0..1 Grouping -->
-        <id>04173D</id>
-        <name>Ruth Kam</name>
-        <institution>9403258</institution>
-      </updatedBy>
-      <updatedDateTime>2026-05-16T10:45:00+08:00</updatedDateTime>  <!-- [M] card 0..1 DateTime -->
-
-    </problem>
-
-
-    <!-- ============================================================ -->
-    <!-- PROBLEM #5 — CANCELLED (recorded in error)                     -->
-    <!-- Demonstrates: status=Cancelled. Used when a problem was added  -->
-    <!-- to the list mistakenly (wrong patient, typo on the SNOMED      -->
-    <!-- picker, etc.). The entry is preserved on the list with a       -->
-    <!-- Cancelled status so the audit trail is intact, but receiving   -->
-    <!-- systems should hide it from the active problem list view.      -->
-    <!-- ============================================================ -->
-    <problem>                                           <!-- [M] card 0..* Grouping -->
-
-      <id>RK22001234-005</id>                           <!-- [M] card 0..1 String(50) -->
-      <sequenceNo>5</sequenceNo>                        <!-- [M] card 0..1 String(11) -->
-
-      <category>                                        <!-- [M] card 0..1 Grouping -->
-        <code>2</code>                                  <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Problem_Category_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Diagnosis</textDescription>    <!-- [M] card 0..1 String(CLOB) -->
-      </category>
-
-      <problemName>                                     <!-- [M] card 0..1 Grouping | SNOMED CT -->
-        <code>53741008</code>                           <!-- [M] card 0..1 String(50) | Coronary arteriosclerosis — recorded in error -->
-        <codingSchemeName>SNOMED-CT</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <codingSchemeVersion>SG-Extension-2026-04</codingSchemeVersion>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Coronary arteriosclerosis (disorder)</textDescription>  <!-- [M] card 0..1 String(CLOB) -->
-      </problemName>
-
-      <status>                                          <!-- [M] card 0..1 Grouping -->
-        <code>Cancelled</code>                          <!-- [M] card 0..1 String(50) | Erroneous entry — clinician picked wrong concept. -->
-        <codingSchemeName>Diagnosis_Status_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Cancelled</textDescription>    <!-- [M] card 0..1 String(CLOB) -->
-      </status>
-
-      <serviceSpecialty>                                <!-- [M] card 0..1 Grouping -->
-        <code>NEHR_SS_0002</code>                       <!-- [M] card 0..1 String(50) -->
-        <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) -->
-        <textDescription>Cardiology</textDescription>   <!-- [M] card 0..1 String(CLOB) -->
-      </serviceSpecialty>
-
-      <notes>Entered in error during 2026-04-22 consultation; patient does not carry this diagnosis. Cancelled at next review.</notes>
-                                                        <!-- [O] card 0..1 String(CLOB) -->
-
-      <institution>9403258</institution>                <!-- [M] card 0..1 String(50) -->
-      <sourceOfOrigin>MDX-GCMS</sourceOfOrigin>         <!-- [M] card 0..1 String(50) -->
-
-      <createdBy>                                       <!-- [M] card 0..1 Grouping -->
-        <id>04173D</id>
-        <name>Ruth Kam</name>
-        <institution>9403258</institution>
-      </createdBy>
-      <createdDateTime>2026-04-22T15:00:00+08:00</createdDateTime>  <!-- [M] card 0..1 DateTime -->
-
-      <updatedBy>                                       <!-- [M] card 0..1 Grouping -->
-        <id>04173D</id>
-        <name>Ruth Kam</name>
-        <institution>9403258</institution>
-      </updatedBy>
-      <updatedDateTime>2026-05-16T10:50:00+08:00</updatedDateTime>  <!-- [M] card 0..1 DateTime -->
-
-    </problem>
-
-
-  </problemList>
-
+<!-- Visit Diagnosis (VD) contributed via putPatientProblemList. Corrected from record 1 of
+     /nehr/xml/problemlist (fetched 8 Aug 2026). Validates against schemas/putPatientProblemList_Request.xsd.
+     TO CONFIRM WITH SYNAPXE: namespace still http://www.mohh.com/nehr (our XSD copy is the 2023Q4 build).
+     See FIXES.md in this folder for every change and the open items. -->
+<putPatientProblemList xmlns="http://www.mohh.com/nehr">
+	<controlHeader>
+		<srcInstitution>9403258</srcInstitution>
+		<licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>
+		<srcApplication>MDX-GCMS</srcApplication>
+		<msgID>09df7627-1b13-41eb-9c4a-2f8e5d1a7b60</msgID>
+		<msgSequenceID>1</msgSequenceID>
+		<msgDateTime>2026-08-08T22:41:57+08:00</msgDateTime>
+	</controlHeader>
+	<patient>
+		<identification>
+			<id>S1790779D</id>
+			<MRNNumber>MDX-GCMS^13027674</MRNNumber>
+			<type>SP</type>
+		</identification>
+		<name>
+			<value>LIM MUI FOONG</value>
+			<title>Mdm</title>
+		</name>
+		<dateOfBirth>1967-06-03</dateOfBirth>
+		<!-- UNRESOLVED — do not bulk-convert gender yet. Template samples M/F/U; the NHDD sample
+		     subset says C=Female, D=Male, E=Unknown; the live system emits C/D. See FIXES.md. -->
+		<gender>F</gender>
+		<nationality>SG</nationality>
+		<language>EL</language>
+	</patient>
+	<problemList>
+		<recordIdentifier>03251fef-dc6f-4720-8f80-16d047e1b8bd1</recordIdentifier>
+		<eventId>0808202608252836813027674</eventId>
+		<userInstitution>9403258</userInstitution>
+		<listType>Visit Diagnosis List</listType>
+		<listStatus>
+			<code>Final</code>
+			<codingSchemeName>Problem_List_Status_(NEHR)</codingSchemeName>
+			<textDescription>Final</textDescription>
+		</listStatus>
+		<lastUpdatedBy>
+			<id>M03009J</id>
+			<name>PHILIP KOH</name>
+		</lastUpdatedBy>
+		<lastUpdatedDateTime>2026-08-08T22:41:57+08:00</lastUpdatedDateTime>
+		<problem>
+			<id>RK13027674-002</id>
+			<sequenceNo>1</sequenceNo>
+			<category>
+				<code>2</code>
+				<codingSchemeName>Problem_Category_(NEHR)</codingSchemeName>
+				<textDescription>Diagnosis</textDescription>
+			</category>
+			<!-- BLOCKER — `code` below is a placeholder, NOT a shippable value. The source currently
+			     sends "0" for every diagnosis. It must carry the real SNOMED CT concept ID matching
+			     textDescription (template sample: "161891005"). The source's free-text diagnoses are
+			     clinician shorthand ("Controlled BP/DM/Lipids", "Stable CAD s/p PCI") and need a
+			     clinical mapping exercise to SNOMED CT — see FIXES.md > "The SNOMED gap". -->
+			<problemName>
+				<code>TODO_SNOMED_CT_CONCEPT_ID</code>
+				<codingSchemeName>SNOMED-CT</codingSchemeName>
+				<codingSchemeVersion>Jul2024</codingSchemeVersion>
+				<textDescription>Controlled BP/DM/Lipids</textDescription>
+			</problemName>
+			<conditionType>
+				<code>Chronic</code>
+				<codingSchemeName>Condition_Type_(NEHR)</codingSchemeName>
+				<textDescription>Chronic</textDescription>
+			</conditionType>
+			<status>
+				<code>Active</code>
+				<codingSchemeName>Diagnosis_Status_(NEHR)</codingSchemeName>
+				<textDescription>Active</textDescription>
+			</status>
+			<state>
+				<code>Final</code>
+				<codingSchemeName>Diagnosis_State_(NEHR)</codingSchemeName>
+				<textDescription>Final</textDescription>
+			</state>
+			<serviceSpecialty>
+				<code>NEHR_SS_0002</code>
+				<codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
+				<textDescription>Cardiology</textDescription>
+			</serviceSpecialty>
+			<institution>9403258</institution>
+			<sourceOfOrigin>MDX-GCMS</sourceOfOrigin>
+			<createdBy>
+				<id>M03009J</id>
+				<name>PHILIP KOH</name>
+				<institution>9403258</institution>
+			</createdBy>
+			<createdDateTime>2026-08-08T22:41:57+08:00</createdDateTime>
+			<updatedBy>
+				<id>M03009J</id>
+				<name>PHILIP KOH</name>
+				<institution>9403258</institution>
+			</updatedBy>
+			<updatedDateTime>2026-08-08T22:41:57+08:00</updatedDateTime>
+		</problem>
+	</problemList>
 </putPatientProblemList>
-
-
-<!--
-================================================================================
-  HOW TO USE THIS REFERENCE
-================================================================================
-
-  1) STRUCTURE READING
-     Read top to bottom. Element ORDER is what the spec defines and what XSD
-     validation enforces — preserve it when constructing real messages.
-
-  2) ANNOTATION DECODE
-     <element>VALUE</element>  <! [M] card 1 String(50) | meaning >
-                                  ↑    ↑     ↑          ↑
-                                  Sig  Card  Type/Len   What/Source
-
-     Significance: M / O / C
-       M = Mandatory (must populate)
-       O = Optional (populate if available; otherwise OMIT entirely)
-       C = Conditional Mandatory (mandatory when condition holds, e.g.
-           reasonForCancellation when listStatus=Cancelled)
-
-     Cardinality: how many times the element can appear
-       1     = exactly once
-       0..1  = zero or one
-       0..*  = zero or many
-
-     Type/Length: data type with max length
-       String(N), String(CLOB), Long(N), Date, DateTime, Grouping
-
-  3) SIGNIFICANCE-PRECEDENCE RULE
-     A Mandatory child within an Optional parent is Mandatory only IF the parent
-     is included. If you skip the parent, you skip the child too.
-
-       Optional parents in PPL:
-         <reasonForCancellation>, <context>, <healthDomain>,
-         <severity>, <conditionType>, <state>, <clinicalStageGrade>,
-         <onsetAgeUOM>, <abatementAgeUOM>,
-         <address>, <phone>, <nextOfKin>
-
-       Inside each, Mandatory children become required ONLY if the parent
-       is included.
-
-  4) NO EMPTY TAGS RULE
-     Per Synapxe Guide v0.42 (page 10):
-       Source must EXCLUDE empty XML tags. Do not emit:
-         ❌ <tag></tag>
-         ❌ <tag/>
-         ❌ <tag>NA</tag>  (unless NA is a meaning-bearing codeset value)
-       If a value is missing or null, OMIT the entire element.
-
-  5) FOR HEART CLINIC SPECIFICALLY
-     - listType.code = "Non-reconciled PPL" (always)  [see DISCREPANCY note below]
-     - listStatus.code = "Final" (always, except for cancellation messages)
-     - context.code = "6" (Outpatient Visit (Post-consultation)) — typical
-     - serviceSpecialty.code = "NEHR_SS_0002" (Cardiology, hardcode for every problem)
-     - srcInstitution = "9403258" (main branch HCI; Farrer TBC)
-     - srcApplication = "MDX-GCMS"
-     - sourceOfOrigin = "MDX-GCMS"
-     - licenseeNumber = "L/9403258/MDS/007/242"
-     - userInstitution = "9403258"
-     - recordIdentifier = "RK-PPL-" + srcApplication + "-" + Reg_No (per patient, never changes)
-     - category.code = "2" (Diagnosis) as default; "1" (Problem) or "6" (Unclassified) on override
-     - DO NOT populate reasonForCancellation in normal Final submissions
-     - DO NOT populate dateOfDeath/deathIndicator unless from authoritative source
-
-  6) LIST TYPE / LIST STATUS — KEY DISTINCTION
-     listType   = WHAT KIND OF LIST this is. For us, always "Non-reconciled PPL".
-     listStatus = WHERE the list currently is in its lifecycle. For us, normally
-                  "Final". Use "Cancelled" only to retract an entire list, and
-                  populate reasonForCancellation when you do.
-
-     DISCREPANCY (open question with Synapxe SPOC):
-     The spec says listType uses Problem_List_Status_(NEHR), with expected
-     sample value "Non-reconciled PPL". But the Codeset Inventory v2.29 shows
-     Problem_List_Status_(NEHR) contains only Final/Cancelled/Amended. Probable
-     interpretation: a separate Problem_List_Type_(NEHR) codeset exists but is
-     not yet in the inventory. Confirm before production transmission.
-
-  7) THE FOUR PER-PROBLEM LIFECYCLE STATES
-     status (Diagnosis_Status_(NEHR)) and state (Diagnosis_State_(NEHR)) are
-     TWO INDEPENDENT axes. They answer different questions:
-
-       status: Is the problem currently affecting the patient?
-         Active      — currently affecting the patient
-         Inactive    — known but not currently active
-         Resolved    — temporarily or permanently cleared (populate abatementDate)
-         Provisional — suspected, awaiting confirmation
-         Cancelled   — recorded in error
-         Not Applicable — used at list-level only; not for active per-problem use
-
-       state: How confident is the clinician?
-         Provisional — preliminary, pending workup
-         Final       — confirmed by clinical findings (ECG, echo, biopsy, etc.)
-
-     Common combinations:
-       Active + Final         → typical confirmed chronic condition
-       Provisional + Provisional → suspected diagnosis pending workup
-       Resolved + Final       → confirmed condition that has cleared
-       Cancelled + (omit state) → erroneous entry
-
-  8) SNOMED CT SUB-ELEMENTS
-     problemName is the ONE coded field where codingSchemeVersion is Mandatory
-     (every other coded field has it as Optional). Reason: SNOMED CT concepts
-     can be retired or replaced between releases, so pinning the version tells
-     the receiving system which release to validate against.
-
-     The textDescription must be the SNOMED concept's "Fully Specified Name"
-     ending with a semantic tag in parentheses:
-       — "Atrial fibrillation (disorder)"
-       — "Transient ischemic attack (disorder)"
-       — "Heart failure (disorder)"
-     Do not abbreviate or use the short clinical name.
-
-  9) GCMS SCHEMA GAPS — WHAT CANNOT YET BE POPULATED
-     The following PPL Mandatory fields have no GCMS column today:
-       - problem.problemName.code (SNOMED CT) — needs picker + column
-       - problem.category.code — needs new dropdown
-       - problem.status.code (5+ values) — Recordstatus int too coarse
-       - problem.createdBy.id (MCR) — derive from consultation FK
-       - problem.updatedBy.id, problem.updatedDateTime — no audit columns
-       - patient.race — gap already known from putEvent walkthrough
-       - patient.identification.type — gap already known from putEvent walkthrough
-
-     See Section 7 of NEHR_putPatientProblemList_Field_Walkthrough.docx for
-     the full schema-gap list with severity ratings and implementation notes.
-
- 10) RUNNING THIS FILE
-     This file is for reading, not for sending. The reasonForCancellation
-     grouping is shown for reference but should NOT be populated in a Final
-     submission. Five problems are shown to demonstrate lifecycle states; a
-     real submission would have only as many problems as the patient actually
-     carries on her list at that visit.
-     For real transmissions: see NEHR_putPatientProblemList_Sample_Mandatory.xml.
-
-================================================================================
-  RELATED FILES IN THE WORKSPACE
-================================================================================
-  NEHR_putPatientProblemList_Sample_Mandatory.xml
-      Minimum valid payload — every Mandatory element, no Optional fields.
-      Copy-paste basis for the developer's first end-to-end test.
-
-  NEHR_putPatientProblemList_Sample_Full.xml
-      Fully populated message without inline annotations. Same shape as this
-      reference but cleaner for visual inspection.
-
-  NEHR_putPatientProblemList_Field_Walkthrough.docx
-      Field-by-field walkthrough — for the developer + client review meeting.
-      Includes schema-gap summary, client questions, codeset values, open
-      questions for Synapxe SPOC.
-
-  putPatientProblemList_v0.2_(PPL)_20251224.xlsx
-      The Synapxe authoritative Specifications (in the uploads folder).
-
-  INT_2_1_Onboarding_CodeSetInventory_v2.29_20251224.xlsx
-      The Synapxe Codeset Inventory (in the workspace root).
-================================================================================
--->

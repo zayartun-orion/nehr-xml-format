@@ -1,680 +1,170 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-================================================================================
-  putPatientMedicationList — Sample XML (reconciliation at 3-month follow-up)
-  Project:    NEHR Onboarding — Heart Clinic / MDXcess GCMS
-  Spec ref:   putPatientMedicationList_v0.2_20251224.xlsx (Synapxe), Request tab
-  Generated:  2026-05-26
-
-  SCENARIO
-  =================
-  Continuation of the TAN AH BENG cardiology scenario.
-
-  Timeline so far:
-    2026-05-12  Initial visit. Dr Ruth Kam diagnoses AF + HTN.
-                Prescribes XARELTO 20 mg + CONCOR 5 mg + COVERSYL 5 mg.
-                Initial 30-day dispense same day.
-    2026-06-11  Refill of all three at clinic dispensary.
-    2026-07-11  Another refill of all three (not shown).
-    2026-08-12  THIS VISIT — 3-month follow-up consultation with Dr Kam.
-
-  What happens at the 2026-08-12 visit:
-    1. Dr Kam reviews the patient's medications, BP log, and recent labs.
-    2. Patient is doing well on XARELTO + CONCOR + COVERSYL.
-    3. Recent LDL came back at 4.1 mmol/L — above target for AF + HTN patient.
-       Dr Kam ADDS CRESTOR 10 mg OD for lipid control.
-    4. Patient mentions taking Vitamin D3 2,000 IU daily, bought OTC, for the
-       past 4 months. Dr Kam records it on the list (NOT in SDD — Non-SDD
-       fallback, code NONHSAMANAGED).
-    5. Dr Kam updates the GCMS medication list — this RECONCILED VIEW
-       is what putPatientMedicationList submits to NEHR.
-
-  Resulting PML contains 5 entries:
-    1. XARELTO 20 mg OD       (active, since 2026-05-12)        — SDD
-    2. CONCOR 5 mg OD         (active, since 2026-05-12)        — SDD
-    3. COVERSYL 5 mg OD       (active, since 2026-05-12)        — SDD
-    4. CRESTOR 10 mg OD       (newly added 2026-08-12)          — SDD
-    5. Vitamin D3 2,000 IU OD (active OTC, patient self-source) — Non-SDD
-
-  KEY DIFFERENCES vs putOrderedMedications / putDispensedMedications
-  =================
-  putPatientMedicationList uses a FHIR-influenced structure:
-    list > entry > item > MedicationStatement
-
-  Each entry's MedicationStatement carries:
-    - medicationReference (the SDD/Non-SDD code triple)
-    - dosage (route + timing + quantityRange)
-    - status (active / on-hold / stopped / completed)
-    - dateAsserted (when the clinician confirmed this med)
-    - reasonForUseCodeableConcept (clinical reason)
-    - informationSource (where the info was reconciled from)
-    - supportingInformation > medicationOrder/medicationDispense
-        (links back to the originating order(s) and dispense(s) — these
-         reference IDs are pivotal for NEHR reconciliation)
-
-  And the list itself carries:
-    - reviewedUpon (review trigger code)
-    - sourceOfMedicationList (computer record / patient / family / etc.)
-    - medicalAlert, drugAllergy, notesforHCP — clinical context for readers
-
-  ANNOTATION FORMAT
-  =================
-    [M | O | C]   Significance: Mandatory / Optional / Conditional Mandatory
-    card N        Cardinality
-    Data type / length
-
-  CODESET NOTES
-  =================
-  SDD entries use Singapore Drug Dictionary as codingSchemeName.
-  The Vitamin D3 entry uses Non_Singapore_Drug_Dictionary_(NEHR) with the
-  fallback code NONHSAMANAGED — this is the NEHR-managed catch-all for
-  OTC items / supplements / drugs not in the SDD prescribing subset.
-
-  SMST OPT-OUT
-  =================
-  Same as the other medication interfaces — SMST coded triples are shown
-  populated with [SMST] markers; omit the coded sub-elements and retain
-  textDescription if the opt-out stands.
-================================================================================
--->
-
-<putPatientMedicationList xmlns="http://www.synapxe.sg/nehr/putPatientMedicationList">  <!-- [M]  card 1  Grouping  (root) -->
-
-  <controlHeader>                                       <!-- [M]  card 1  Grouping -->
-    <srcInstitution>9403258</srcInstitution>            <!-- [M]  card 1     String(50) -->
-    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>  <!-- [M]  card 0..1  String(50) -->
-    <srcApplication>MDX-GCMS</srcApplication>           <!-- [M]  card 1     String(50) -->
-    <msgID>MDX-GCMS-PML-20260812-00001</msgID>          <!-- [M]  card 1     String(50)   PML naming convention -->
-    <msgSequenceID>457</msgSequenceID>                  <!-- [M]  card 1     Long(15) -->
-    <msgDateTime>2026-08-12T16:55:32+08:00</msgDateTime>  <!-- [M]  card 1     DateTime     End of consultation, after meds reconciled -->
-  </controlHeader>
-
-
-  <patient>                                             <!-- [M]  card 1  Grouping -->
-
-    <identification>                                    <!-- [M]  card 1     Grouping -->
-      <id>S5512345A</id>                                <!-- [M]  card 0..1  String(20) -->
-      <MRNNumber>MDX-GCMS^13007891</MRNNumber>          <!-- [M]  card 1     String(60) -->
-      <type>SP</type>                                   <!-- [M]  card 0..1  String(128) -->
-    </identification>
-
-    <name>                                              <!-- [M]  card 0..1  Grouping -->
-      <value>TAN AH BENG</value>                        <!-- [M]  card 0..1  String(128) -->
-      <title>MR</title>                                 <!-- [O]  card 0..1  String(10) -->
-    </name>
-
-    <contactDetails>                                    <!-- [O]  card 0..1  Grouping -->
-      <address>                                         <!-- [O]  card 0..*  Grouping -->
-        <type>MAIN</type>                               <!-- [M]  card 0..1  String(5) -->
-        <streetLine1>BLK 412 #08-219</streetLine1>      <!-- [O]  card 0..1  String(75) -->
-        <streetLine2>ANG MO KIO AVENUE 10</streetLine2> <!-- [O]  card 0..1  String(75) -->
-        <city>SINGAPORE</city>                          <!-- [O]  card 0..1  String(50) -->
-        <country>SG</country>                           <!-- [O]  card 0..1  String(50) -->
-        <postalCode>560412</postalCode>                 <!-- [O]  card 0..1  String(10) -->
-      </address>
-      <phone>                                           <!-- [O]  card 0..*  Grouping -->
-        <type>MOBILE</type>                             <!-- [M]  card 0..1  String(8) -->
-        <countryCode>65</countryCode>                   <!-- [O]  card 0..1  String(50) -->
-        <phoneNumber>91234567</phoneNumber>             <!-- [M]  card 0..1  String(40) -->
-      </phone>
-    </contactDetails>
-
-    <dateOfBirth>1955-03-15</dateOfBirth>               <!-- [M]  card 0..1  Date -->
-    <gender>M</gender>                                  <!-- [M]  card 0..1  String(128) -->
-    <race>CHN</race>                                    <!-- [M]  card 0..1  String(128) -->
-
-  </patient>
-
-
-  <!--========================================================================
-      THE LIST ITSELF — FHIR-influenced container
-      ========================================================================-->
-  <list>                                                <!-- [M]  card 1  Grouping  (the medication list snapshot) -->
-
-    <identifier>pml-2026-08-12-tan-ah-beng</identifier>
-                                                        <!-- [M]  card 0..1  String       Per-patient stable identifier; same value used across submissions for THIS patient. Subsequent PML submissions OVERWRITE prior state. -->
-
-    <encounter>                                         <!-- [O]  card 0..1  Grouping  (the visit at which reconciliation happened) -->
-      <identifier>evt-2026-08-12-002</identifier>       <!-- [M]  card 0..1  String       Matches the eventID of THIS visit's putEvent submission -->
-    </encounter>
-
-    <date>2026-08-12T16:55:00+08:00</date>              <!-- [M]  card 0..1  DateTime     When this list snapshot was finalised by the clinician -->
-
-    <status>                                            <!-- [M]  card 0..1  Grouping  (status of the LIST, not per-item) -->
-      <code>Final</code>                                  <!-- [M]  card 0..1  String(50)   CUR=Current (verify code in Codeset Inv: Med_List_Status_(NEHR)) -->
-      <codingSchemeName>Med_List_Status_(NEHR)</codingSchemeName>
-                                                        <!-- [M]  card 0..1  String(50) -->
-      <textDescription>Final</textDescription>        <!-- [M]  card 0..1  String(CLOB) -->
-    </status>
-
-    <code>                                              <!-- [M]  card 0..1  Grouping  (the type of list — Patient Medication List) -->
-      <code>PML</code>                                  <!-- [M]  card 0..1  String(50)   List type code -->
-      <codingSchemeName>Med_List_Type_(NEHR)</codingSchemeName>
-                                                        <!-- [M]  card 0..1  String(50) -->
-      <textDescription>Patient Medication List</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-    </code>
-
-    <reviewedUpon>                                      <!-- [M]  card 0..1  Grouping  (what triggered the review) -->
-      <code>6</code>                                 <!-- [M]  card 0..1  String(50)   CONS=Consultation (vs ADMIT, DISCH, etc.) -->
-      <codingSchemeName>Med_List_Reviewed_Upon_(NEHR)</codingSchemeName>
-                                                        <!-- [M]  card 0..1  String(50) -->
-      <textDescription>Outpatient (Post-Consultation)</textDescription>   <!-- [M]  card 0..1  String(CLOB) -->
-    </reviewedUpon>
-
-    <sourceOfMedicationList>                            <!-- [M]  card 0..1  Grouping  (where this reconciliation drew from) -->
-      <code>2</code>                          <!-- [M]  card 0..1  String(50)   Computer record + patient self-report (combined reconciliation) -->
-      <codingSchemeName>Med_List_Source_(NEHR)</codingSchemeName>
-                                                        <!-- [M]  card 0..1  String(50) -->
-      <textDescription>Clinical Records (reconciled with patient self-report)</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-    </sourceOfMedicationList>
-
-    <source>                                            <!-- [M]  card 0..1  Grouping  (clinician who curated this list) -->
-      <practitioner>                                    <!-- [M]  card 0..1  Grouping -->
-        <identifier>04173D</identifier>                 <!-- [M]  card 0..1  String       MCR of Dr Ruth Kam — the reviewing clinician -->
-        <name>Ruth Kam</name>                           <!-- [M]  card 0..1  String -->
-        <practitionerRole>                              <!-- [M]  card 0..1  Grouping -->
-          <managingOrganization>                        <!-- [M]  card 0..1  Grouping -->
-            <identifier>9403258</identifier>            <!-- [M]  card 0..1  String       Heart Clinic HCI code -->
-          </managingOrganization>
-        </practitionerRole>
-      </practitioner>
-    </source>
-
-    <medicalAlert>                                      <!-- [O]  card 0..*  Grouping  (clinical alerts travelling with the list) -->
-      <textDescription>Patient on anticoagulation (Rivaroxaban). Use caution with NSAIDs and intramuscular injections; avoid aspirin co-prescription unless specifically indicated.</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-    </medicalAlert>
-
-    <drugAllergy>                                       <!-- [O]  card 0..*  Grouping  (allergies repeated as note for safety reference; primary source is putAllergyADR) -->
-      <textDescription>No known drug allergies (NKDA) as of 2026-08-12 reconciliation.</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-    </drugAllergy>
-
-    <notesforHCP>                                       <!-- [O]  card 0..1  Grouping  (clinical issues for downstream clinicians) -->
-      <medicationManagementIssues>                      <!-- [O]  card 0..*  Grouping -->
-        <code>999</code>                          <!-- [M]  card 0..1  String(50)   Polypharmacy flag (5+ chronic meds) -->
-        <codingSchemeName>Med_List_Mgmt_Issues_(NEHR)</codingSchemeName>
-                                                        <!-- [M]  card 0..1  String(50) -->
-        <textDescription>Others — Polypharmacy: patient on 4 prescription meds + 1 OTC supplement. Review for interactions at each visit.</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-      </medicationManagementIssues>
-    </notesforHCP>
-
-    <!--========================================================================
-        ENTRY 1 of 5 — XARELTO 20 mg OD (continuing — original since 2026-05-12)
-        ========================================================================-->
-    <entry>                                             <!-- [M]  card 1..*  Grouping  (one entry per medication on the list) -->
-
-      <date>2026-05-12</date>                           <!-- [M]  card 0..1  Date         When this med first entered the patient's regime -->
-
-      <item>                                            <!-- [M]  card 1     Grouping -->
-        <MedicationStatement>                           <!-- [M]  card 1     Grouping  (FHIR-style — the clinical statement) -->
-
-          <identifier>ms-2026-08-12-001-01</identifier> <!-- [M]  card 0..1  String       Per-statement ID, stable across resubmissions of this list state -->
-          <sequenceNo>1</sequenceNo>                    <!-- [M]  card 0..1  Integer      Position in the list -->
-          <dateAsserted>2026-08-12T16:55:00+08:00</dateAsserted>
-                                                        <!-- [M]  card 0..1  DateTime     When Dr Kam confirmed "patient is currently taking this" -->
-
-          <status>                                      <!-- [M]  card 0..1  Grouping  (per-item status — distinct from list status) -->
-            <code>Active</code>                            <!-- [M]  card 0..1  String(50)   Active (vs on-hold, stopped, completed) -->
-            <codingSchemeName>Med_List_Item_Status_(NEHR)</codingSchemeName>
-                                                        <!-- [M]  card 0..1  String(50) -->
-            <textDescription>Active</textDescription>   <!-- [M]  card 0..1  String(CLOB) -->
-          </status>
-
-          <medicationReference>                         <!-- [M]  card 1     Grouping  (the drug — SDD goes here for PML) -->
-            <code>                                      <!-- [M]  card 0..1  Grouping -->
-              <code>95901000133102</code>               <!-- [M]  card 0..1  String(50)   SDD ConceptId — XARELTO [Rivaroxaban] Tablet (MTPF) -->
-              <codingSchemeName>Singapore Drug Dictionary</codingSchemeName>
-                                                        <!-- [M]  card 0..1  String(50) -->
-              <textDescription>XARELTO [Rivaroxaban] Tablet</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-            </code>
-            <product>                                   <!-- [O]  card 0..1  Grouping  (further product-level info) -->
-              <form>                                    <!-- [M]  card 0..1  Grouping  [SMST] -->
-                <code>421026006</code>
-                <codingSchemeName>Med_DoseForm_(NEHR)</codingSchemeName>
-                <textDescription>Tablet</textDescription>
-              </form>
-              <strengthUnit>                            <!-- [M]  card 0..1  Grouping -->
-                <textDescription>20 mg</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB)  Strength as text (since SDD MTPF is form-only, strength carried here) -->
-              </strengthUnit>
-            </product>
-          </medicationReference>
-
-          <dosage>                                      <!-- [M]  card 0..1  Grouping -->
-            <route>                                     <!-- [M]  card 0..1  Grouping  [SMST] -->
-              <code>26643006</code>
-              <codingSchemeName>Med_RouteofAdmin_(NEHR)</codingSchemeName>
-              <textDescription>Oral</textDescription>
-            </route>
-            <timing>                                    <!-- [M]  card 0..1  Grouping -->
-              <code>                                    <!-- [M]  card 0..1  Grouping  [SMST] -->
-                <code>OD</code>
-                <codingSchemeName>Med_Frequency_(NEHR)</codingSchemeName>
-                <textDescription>Once Daily</textDescription>
-              </code>
-            </timing>
-            <quantityRange>                             <!-- [M]  card 0..1  Grouping  (per-dose amount) -->
-              <low>
-                <value>1</value>                        <!-- [M]  card 0..1  Decimal -->
-              </low>
-              <unit>
-                <code>428673006</code>                        <!-- [M]  card 0..1  String(50) -->
-                <codingSchemeName>Med_UnitofMeasure_(NEHR)</codingSchemeName>
-                <textDescription>tablet</textDescription>
-              </unit>
-            </quantityRange>
-          </dosage>
-
-          <reasonForUseCodeableConcept>                 <!-- [M]  card 0..1  Grouping -->
-            <textDescription>Atrial fibrillation — stroke prophylaxis</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-          </reasonForUseCodeableConcept>
-
-          <informationSource>                           <!-- [M]  card 0..1  Grouping  (where info on THIS med came from) -->
-            <practitioner>
-              <identifier>04173D</identifier>           <!-- [M]  card 0..1  String       Dr Kam — patient confirmed during visit, EMR has supporting prescription record -->
-              <name>Ruth Kam</name>                     <!-- [M]  card 0..1  String -->
-              <practitionerRole>
-                <managingOrganization>
-                  <identifier>9403258</identifier>      <!-- [M]  card 0..1  String       Heart Clinic -->
-                </managingOrganization>
-              </practitionerRole>
-            </practitioner>
-          </informationSource>
-
-          <supportingInformation>                       <!-- [O]  card 0..1  Grouping  (link to originating order(s) and dispense(s)) -->
-            <medicationOrder>                           <!-- [O]  card 0..1  Grouping -->
-              <prescriber>
-                <identifier>04173D</identifier>         <!-- [M]  card 0..1  String -->
-                <name>Ruth Kam</name>                   <!-- [M]  card 0..1  String -->
-                <practitionerRole>
-                  <managingOrganization>
-                    <identifier>9403258</identifier>    <!-- [M]  card 0..1  String -->
-                  </managingOrganization>
-                </practitionerRole>
-              </prescriber>
-              <dateWritten>2026-05-12T15:42:00+08:00</dateWritten>
-                                                        <!-- [M]  card 0..1  DateTime     Original prescription date -->
-              <dispenseRequest>                         <!-- [O]  card 0..1  Grouping -->
-                <quantity>
-                  <unit>
-                    <textDescription>30 tablets per dispense</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-                  </unit>
-                </quantity>
-                <expectedSupplyDuration>
-                  <value>
-                    <textDescription>30 days per refill</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-                  </value>
-                  <unit>
-                    <textDescription>Days</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-                  </unit>
-                </expectedSupplyDuration>
-              </dispenseRequest>
-            </medicationOrder>
-
-            <medicationDispense>                        <!-- [O]  card 0..1  Grouping  (last known dispense) -->
-              <whenHandedOver>2026-07-11T10:30:00+08:00</whenHandedOver>
-                                                        <!-- [M]  card 0..1  DateTime     Most recent refill collection -->
-              <quantity>
-                <unit>
-                  <textDescription>30 tablets</textDescription>  <!-- [M]  card 0..1  String(CLOB) -->
-                </unit>
-              </quantity>
-              <daysSupply>
-                <value>
-                  <textDescription>30</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-                </value>
-                <unit>
-                  <textDescription>Days</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) -->
-                </unit>
-              </daysSupply>
-              <authorizingPrescription>                 <!-- [O]  card 0..1  Grouping -->
-                <prescriber>
-                  <identifier>04173D</identifier>       <!-- [M]  card 0..1  String -->
-                  <name>Ruth Kam</name>                 <!-- [M]  card 0..1  String -->
-                  <practitionerRole>
-                    <managingOrganization>
-                      <identifier>9403258</identifier>  <!-- [M]  card 0..1  String -->
-                    </managingOrganization>
-                  </practitionerRole>
-                </prescriber>
-              </authorizingPrescription>
-            </medicationDispense>
-          </supportingInformation>
-
-        </MedicationStatement>
-      </item>
-    </entry>
-
-    <!--========================================================================
-        ENTRY 2 of 5 — CONCOR 5 mg OD (continuing)
-        ========================================================================-->
-    <entry>                                             <!-- [M]  card 1..*  Grouping -->
-      <date>2026-05-12</date>                           <!-- [M]  card 0..1  Date -->
-      <item>
-        <MedicationStatement>
-          <identifier>ms-2026-08-12-001-02</identifier> <!-- [M]  card 0..1  String -->
-          <sequenceNo>2</sequenceNo>                    <!-- [M]  card 0..1  Integer -->
-          <dateAsserted>2026-08-12T16:55:00+08:00</dateAsserted>
-                                                        <!-- [M]  card 0..1  DateTime -->
-
-          <status>                                      <!-- [M]  card 0..1  Grouping -->
-            <code>Active</code>
-            <codingSchemeName>Med_List_Item_Status_(NEHR)</codingSchemeName>
-            <textDescription>Active</textDescription>
-          </status>
-
-          <medicationReference>                         <!-- [M]  card 1     Grouping  (SDD) -->
-            <code>
-              <code>93031000133109</code>               <!-- [M]  card 0..1  String(50)   CONCOR [Bisoprolol Fumarate] Tablet (MTPF) -->
-              <codingSchemeName>Singapore Drug Dictionary</codingSchemeName>
-              <textDescription>CONCOR [Bisoprolol Fumarate] Tablet</textDescription>
-            </code>
-            <product>
-              <form>                                    <!-- [SMST] -->
-                <code>421026006</code>
-                <codingSchemeName>Med_DoseForm_(NEHR)</codingSchemeName>
-                <textDescription>Tablet</textDescription>
-              </form>
-              <strengthUnit>
-                <textDescription>5 mg</textDescription>
-              </strengthUnit>
-            </product>
-          </medicationReference>
-
-          <dosage>
-            <route>                                     <!-- [SMST] -->
-              <code>26643006</code>
-              <codingSchemeName>Med_RouteofAdmin_(NEHR)</codingSchemeName>
-              <textDescription>Oral</textDescription>
-            </route>
-            <timing>
-              <code>                                    <!-- [SMST] -->
-                <code>OD</code>
-                <codingSchemeName>Med_Frequency_(NEHR)</codingSchemeName>
-                <textDescription>Once Daily</textDescription>
-              </code>
-            </timing>
-            <quantityRange>
-              <low><value>1</value></low>
-              <unit>
-                <code>428673006</code>
-                <codingSchemeName>Med_UnitofMeasure_(NEHR)</codingSchemeName>
-                <textDescription>tablet</textDescription>
-              </unit>
-            </quantityRange>
-          </dosage>
-
-          <reasonForUseCodeableConcept>
-            <textDescription>Atrial fibrillation — rate control</textDescription>
-          </reasonForUseCodeableConcept>
-
-          <informationSource>
-            <practitioner>
-              <identifier>04173D</identifier>
-              <name>Ruth Kam</name>
-              <practitionerRole>
-                <managingOrganization>
-                  <identifier>9403258</identifier>
-                </managingOrganization>
-              </practitionerRole>
-            </practitioner>
-          </informationSource>
-
-        </MedicationStatement>
-      </item>
-    </entry>
-
-    <!--========================================================================
-        ENTRY 3 of 5 — COVERSYL 5 mg OD (continuing)
-        ========================================================================-->
-    <entry>                                             <!-- [M]  card 1..*  Grouping -->
-      <date>2026-05-12</date>                           <!-- [M]  card 0..1  Date -->
-      <item>
-        <MedicationStatement>
-          <identifier>ms-2026-08-12-001-03</identifier>
-          <sequenceNo>3</sequenceNo>
-          <dateAsserted>2026-08-12T16:55:00+08:00</dateAsserted>
-
-          <status>
-            <code>Active</code>
-            <codingSchemeName>Med_List_Item_Status_(NEHR)</codingSchemeName>
-            <textDescription>Active</textDescription>
-          </status>
-
-          <medicationReference>                         <!-- [M]  card 1     Grouping  (SDD) -->
-            <code>
-              <code>729344821000133104</code>           <!-- [M]  card 0..1  String(50)   COVERSYL [Perindopril Arginine] Tablet (MTPF) -->
-              <codingSchemeName>Singapore Drug Dictionary</codingSchemeName>
-              <textDescription>COVERSYL [Perindopril Arginine] Tablet</textDescription>
-            </code>
-            <product>
-              <form>                                    <!-- [SMST] -->
-                <code>421026006</code>
-                <codingSchemeName>Med_DoseForm_(NEHR)</codingSchemeName>
-                <textDescription>Tablet</textDescription>
-              </form>
-              <strengthUnit>
-                <textDescription>5 mg</textDescription>
-              </strengthUnit>
-            </product>
-          </medicationReference>
-
-          <dosage>
-            <route>                                     <!-- [SMST] -->
-              <code>26643006</code>
-              <codingSchemeName>Med_RouteofAdmin_(NEHR)</codingSchemeName>
-              <textDescription>Oral</textDescription>
-            </route>
-            <timing>
-              <code>                                    <!-- [SMST] -->
-                <code>OD</code>
-                <codingSchemeName>Med_Frequency_(NEHR)</codingSchemeName>
-                <textDescription>Once Daily</textDescription>
-              </code>
-            </timing>
-            <quantityRange>
-              <low><value>1</value></low>
-              <unit>
-                <code>428673006</code>
-                <codingSchemeName>Med_UnitofMeasure_(NEHR)</codingSchemeName>
-                <textDescription>tablet</textDescription>
-              </unit>
-            </quantityRange>
-          </dosage>
-
-          <reasonForUseCodeableConcept>
-            <textDescription>Essential hypertension</textDescription>
-          </reasonForUseCodeableConcept>
-
-          <informationSource>
-            <practitioner>
-              <identifier>04173D</identifier>
-              <name>Ruth Kam</name>
-              <practitionerRole>
-                <managingOrganization>
-                  <identifier>9403258</identifier>
-                </managingOrganization>
-              </practitionerRole>
-            </practitioner>
-          </informationSource>
-
-        </MedicationStatement>
-      </item>
-    </entry>
-
-    <!--========================================================================
-        ENTRY 4 of 5 — CRESTOR 10 mg OD (NEWLY ADDED at today's visit)
-        ========================================================================-->
-    <entry>                                             <!-- [M]  card 1..*  Grouping -->
-      <date>2026-08-12</date>                           <!-- [M]  card 0..1  Date         Newly started TODAY — date reflects that -->
-      <item>
-        <MedicationStatement>
-          <identifier>ms-2026-08-12-001-04</identifier>
-          <sequenceNo>4</sequenceNo>
-          <dateAsserted>2026-08-12T16:55:00+08:00</dateAsserted>
-
-          <status>
-            <code>Active</code>
-            <codingSchemeName>Med_List_Item_Status_(NEHR)</codingSchemeName>
-            <textDescription>Active</textDescription>
-          </status>
-
-          <medicationReference>                         <!-- [M]  card 1     Grouping  (SDD) -->
-            <code>
-              <code>93091000133108</code>               <!-- [M]  card 0..1  String(50)   CRESTOR [Rosuvastatin] Tablet (MTPF) -->
-              <codingSchemeName>Singapore Drug Dictionary</codingSchemeName>
-              <textDescription>CRESTOR [Rosuvastatin] Tablet</textDescription>
-            </code>
-            <product>
-              <form>                                    <!-- [SMST] -->
-                <code>421026006</code>
-                <codingSchemeName>Med_DoseForm_(NEHR)</codingSchemeName>
-                <textDescription>Tablet</textDescription>
-              </form>
-              <strengthUnit>
-                <textDescription>10 mg</textDescription>
-              </strengthUnit>
-            </product>
-          </medicationReference>
-
-          <dosage>
-            <route>                                     <!-- [SMST] -->
-              <code>26643006</code>
-              <codingSchemeName>Med_RouteofAdmin_(NEHR)</codingSchemeName>
-              <textDescription>Oral</textDescription>
-            </route>
-            <timing>
-              <code>                                    <!-- [SMST] -->
-                <code>ON</code>                         <!-- ON = Once Nightly (statins typically taken at night). Verify code in Codeset Inv. -->
-                <codingSchemeName>Med_Frequency_(NEHR)</codingSchemeName>
-                <textDescription>Once Nightly</textDescription>
-              </code>
-            </timing>
-            <quantityRange>
-              <low><value>1</value></low>
-              <unit>
-                <code>428673006</code>
-                <codingSchemeName>Med_UnitofMeasure_(NEHR)</codingSchemeName>
-                <textDescription>tablet</textDescription>
-              </unit>
-            </quantityRange>
-          </dosage>
-
-          <reasonForUseCodeableConcept>
-            <textDescription>Hyperlipidaemia — LDL 4.1 mmol/L above target for high-risk AF + HTN patient</textDescription>
-          </reasonForUseCodeableConcept>
-
-          <informationSource>
-            <practitioner>
-              <identifier>04173D</identifier>
-              <name>Ruth Kam</name>
-              <practitionerRole>
-                <managingOrganization>
-                  <identifier>9403258</identifier>
-                </managingOrganization>
-              </practitionerRole>
-            </practitioner>
-          </informationSource>
-
-        </MedicationStatement>
-      </item>
-    </entry>
-
-    <!--========================================================================
-        ENTRY 5 of 5 — Vitamin D3 2,000 IU OD (OTC, patient self-source)
-        This entry uses the NON-SDD FALLBACK path.
-        codingSchemeName changes; code is NONHSAMANAGED.
-        informationSource is patient self-report — not a clinic prescription.
-        No supportingInformation block — no order, no dispense to reference.
-        ========================================================================-->
-    <entry>                                             <!-- [M]  card 1..*  Grouping -->
-      <date>2026-04-01</date>                           <!-- [M]  card 0..1  Date         When patient says they started -->
-      <item>
-        <MedicationStatement>
-          <identifier>ms-2026-08-12-001-05</identifier>
-          <sequenceNo>5</sequenceNo>
-          <dateAsserted>2026-08-12T16:55:00+08:00</dateAsserted>
-
-          <status>
-            <code>Active</code>
-            <codingSchemeName>Med_List_Item_Status_(NEHR)</codingSchemeName>
-            <textDescription>Active</textDescription>
-          </status>
-
-          <medicationReference>                         <!-- [M]  card 1     Grouping  (NON-SDD FALLBACK) -->
-            <code>
-              <code>NONHSAMANAGED</code>                <!-- [M]  card 0..1  String(50)   NEHR-managed catch-all code for items not in SDD -->
-              <codingSchemeName>Non_Singapore_Drug_Dictionary_(NEHR)</codingSchemeName>
-                                                        <!-- [M]  card 0..1  String(50)   Different codingSchemeName for the Non-SDD path -->
-              <textDescription>Vitamin D3 (Cholecalciferol) 2,000 IU — OTC supplement, patient self-source</textDescription>
-                                                        <!-- [M]  card 0..1  String(CLOB) When NONHSAMANAGED is used, the textDescription carries the actual product description for downstream readers -->
-            </code>
-            <product>
-              <form>                                    <!-- [SMST] -->
-                <code>421026006</code>
-                <codingSchemeName>Med_DoseForm_(NEHR)</codingSchemeName>
-                <textDescription>Tablet</textDescription>
-              </form>
-              <strengthUnit>
-                <textDescription>2,000 IU</textDescription>
-              </strengthUnit>
-            </product>
-          </medicationReference>
-
-          <dosage>
-            <route>                                     <!-- [SMST] -->
-              <code>26643006</code>
-              <codingSchemeName>Med_RouteofAdmin_(NEHR)</codingSchemeName>
-              <textDescription>Oral</textDescription>
-            </route>
-            <timing>
-              <code>                                    <!-- [SMST] -->
-                <code>OD</code>
-                <codingSchemeName>Med_Frequency_(NEHR)</codingSchemeName>
-                <textDescription>Once Daily</textDescription>
-              </code>
-            </timing>
-            <quantityRange>
-              <low><value>1</value></low>
-              <unit>
-                <code>428673006</code>
-                <codingSchemeName>Med_UnitofMeasure_(NEHR)</codingSchemeName>
-                <textDescription>tablet</textDescription>
-              </unit>
-            </quantityRange>
-          </dosage>
-
-          <reasonForUseCodeableConcept>
-            <textDescription>Patient-initiated supplement for bone health. Reviewed and accepted by clinician.</textDescription>
-          </reasonForUseCodeableConcept>
-
-          <informationSource>                           <!-- [M]  card 0..1  Grouping  (NOT a clinic prescription — patient self-report) -->
-            <practitioner>
-              <identifier>04173D</identifier>           <!-- [M]  card 0..1  String       Reviewing clinician records the patient's self-report -->
-              <name>Ruth Kam</name>                     <!-- [M]  card 0..1  String -->
-              <practitionerRole>
-                <managingOrganization>
-                  <identifier>9403258</identifier>      <!-- [M]  card 0..1  String -->
-                </managingOrganization>
-              </practitionerRole>
-            </practitioner>
-          </informationSource>
-
-          <!-- No supportingInformation block — there is no originating order or dispense for this OTC item. -->
-
-        </MedicationStatement>
-      </item>
-    </entry>
-  </list>
+<!-- Patient Medication List (PML) contributed via putPatientMedicationList. Corrected from the single
+     record of /nehr/xml/listmed (fetched 8 Aug 2026). Validates against
+     schemas/putPatientMedicationList_Request.xsd.
+     TO CONFIRM WITH SYNAPXE: namespace still http://www.mohh.com/nehr (our XSD copy is the 2023Q4 build).
+     See FIXES.md in this folder for every change and the open items.
+
+     ⚠️ THIS SERVICE'S controlHeader IS THE MOST RESTRICTIVE OF ALL 15. It is declared INLINE here with
+     only 11 permitted srcApplication values (all public-cluster systems), and it has NO msgType.
+     Do not reuse putEvent's control-header serializer. -->
+<putPatientMedicationList xmlns="http://www.mohh.com/nehr">
+	<controlHeader>
+		<srcInstitution>9403258</srcInstitution>
+		<licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>
+		<srcApplication>MDX-GCMS</srcApplication>
+		<msgID>aa6d35bc-01d4-485e-9f3b-7c2e6a5d84b1</msgID>
+		<msgSequenceID>7</msgSequenceID>
+		<msgDateTime>2026-08-08T22:42:12+08:00</msgDateTime>
+	</controlHeader>
+	<patient>
+		<identification>
+			<id>S1177999I</id>
+			<MRNNumber>MDX-GCMS^13033541</MRNNumber>
+			<type>SP</type>
+		</identification>
+		<name>
+			<value>SNG MEOW HIANG</value>
+			<title>Mdm</title>
+		</name>
+		<dateOfBirth>1955-09-13</dateOfBirth>
+		<!-- UNRESOLVED — do not bulk-convert gender yet. Template samples M/F/U; the NHDD sample
+		     subset says C=Female, D=Male, E=Unknown; the live system emits C/D. See FIXES.md. -->
+		<gender>F</gender>
+		<nationality>SG</nationality>
+		<language>EL</language>
+		<maritalStatus>2</maritalStatus>
+	</patient>
+	<list>
+		<!-- INFERRED: the source sends no list-level identifier at all, but does send this GUID as the
+		     encounter identifier — where it is definitely wrong. It carries the same "<guid>1" shape as
+		     the recordIdentifier in putEvent and putPatientProblemList, so it is almost certainly the
+		     PML record's own identifier written into the wrong element. Vendor to confirm. -->
+		<identifier>af6dbfee-0563-462f-a1bb-2ff9d30bb9151</identifier>
+		<code>
+			<code>1</code>
+			<codingSchemeName>Med_List_Type_(NEHR)</codingSchemeName>
+			<textDescription>Patient's Medication List</textDescription>
+		</code>
+		<source>
+			<practitioner>
+				<identifier>M03009J</identifier>
+				<name>PHILIP KOH</name>
+				<practitionerRole>
+					<managingOrganization>
+						<identifier>9403258</identifier>
+					</managingOrganization>
+				</practitionerRole>
+			</practitioner>
+		</source>
+		<encounter>
+			<!-- BLOCKER — placeholder, NOT a shippable value. The template requires "the same event id
+			     value and format as per putEvent data type for the same visit/encounter"
+			     (e.g. 0808202608252836813027674). The source currently sends a GUID here instead, so
+			     this PML links to no visit in NEHR. Populate from this patient's putEvent event/id. -->
+			<identifier>TODO_PUTEVENT_EVENT_ID</identifier>
+		</encounter>
+		<status>
+			<code>Final</code>
+			<codingSchemeName>Med_List_Status_(NEHR)</codingSchemeName>
+			<textDescription>Final</textDescription>
+		</status>
+		<date>2026-08-08T22:42:12+08:00</date>
+		<!-- CONFIRM WITH THE VENDOR: 0 = CMIS was NOT available when this list was created.
+		     Set to 1 only if the clinic actually queries CMIS at PML review. The source omits this
+		     Mandatory field entirely today; 0 is the conservative assertion. -->
+		<CMISAvailability>0</CMISAvailability>
+		<sourceOfMedicationList>
+			<code>2</code>
+			<codingSchemeName>Med_List_Source_(NEHR)</codingSchemeName>
+			<textDescription>Clinical Records</textDescription>
+		</sourceOfMedicationList>
+		<reviewedUpon>
+			<code>6</code>
+			<codingSchemeName>Med_List_Reviewed_Upon_(NEHR)</codingSchemeName>
+			<textDescription>Outpatient(Post-Consultation)</textDescription>
+		</reviewedUpon>
+		<entry>
+			<!-- The source sends date-only ("2026-08-08"), which is not a valid xs:dateTime and fails
+			     schema validation. Time taken from dateAsserted for the same item. -->
+			<date>2026-08-08T22:42:12+08:00</date>
+			<item>
+				<MedicationStatement>
+					<identifier>7df6d98e-1513-49ce-b2f1-f6f52b24f9611</identifier>
+					<sequenceNo>1</sequenceNo>
+					<informationSource>
+						<practitioner>
+							<identifier>M03009J</identifier>
+							<name>PHILIP KOH</name>
+							<practitionerRole>
+								<managingOrganization>
+									<identifier>9403258</identifier>
+								</managingOrganization>
+							</practitionerRole>
+						</practitioner>
+					</informationSource>
+					<dateAsserted>2026-08-08T22:42:12+08:00</dateAsserted>
+					<status>
+						<code>Active</code>
+						<codingSchemeName>Med_List_Item_Status_(NEHR)</codingSchemeName>
+						<textDescription>Active</textDescription>
+					</status>
+					<medicationReference>
+						<!-- BLOCKER — the source's code and its own description name DIFFERENT PRODUCTS.
+						     Sent code 108401000133106 = "JANUMET [Sitagliptin 50 mg + Metformin
+						     Hydrochloride 1,000 mg] Tablet" (immediate release), but the sent
+						     textDescription says "Janumet XR" (extended release). Verified against
+						     standards/SDD_Ambulatory_Care_Private_Prescribing_Subset_20260521.xlsx.
+						     Resolve at source, then use ONE of:
+						       XR 50/1000  -> 159576781000133104  (Extended-Release Tablet)
+						       IR 50/1000  -> 108401000133106     (Tablet)
+						     Do not ship this placeholder. -->
+						<code>
+							<code>TODO_SDD_CODE_CONFLICT</code>
+							<codingSchemeName>Singapore Drug Dictionary</codingSchemeName>
+							<textDescription>Janumet XR 50/1000 (Metformin/Sitagliptin 50/1000 mg)</textDescription>
+						</code>
+						<product>
+							<!-- 421026006 matches the source's own dose-form text "Tab". If the drug
+							     above resolves to Janumet XR, this must become 420627008
+							     "Extended-Release Tablet". Both codes verified in SMST_20260402.xlsx. -->
+							<form>
+								<code>421026006</code>
+								<codingSchemeName>Med_DoseForm_(NEHR)</codingSchemeName>
+								<textDescription>Tablet</textDescription>
+							</form>
+							<!-- strength / strengthUnit omitted. The source puts "50/1000" in
+							     strengthUnit.textDescription, but strength is a Decimal and this is a
+							     two-ingredient combination product, so a single strength+unit pair
+							     cannot represent it. See FIXES.md > "Combination-product strength". -->
+						</product>
+					</medicationReference>
+					<dosage>
+						<timing>
+							<code>
+								<code>229799001</code>
+								<codingSchemeName>Med_Frequency_(NEHR)</codingSchemeName>
+								<textDescription>2 times a day</textDescription>
+							</code>
+						</timing>
+						<route>
+							<code>26643006</code>
+							<codingSchemeName>Med_RouteofAdmin_(NEHR)</codingSchemeName>
+							<textDescription>Oral</textDescription>
+						</route>
+						<quantityRange>
+							<low>
+								<value>1</value>
+							</low>
+							<unit>
+								<code>428673006</code>
+								<codingSchemeName>Med_List_Item_Dose_Unit_(NEHR)</codingSchemeName>
+								<textDescription>tablet</textDescription>
+							</unit>
+						</quantityRange>
+					</dosage>
+				</MedicationStatement>
+			</item>
+		</entry>
+	</list>
 </putPatientMedicationList>

@@ -1,392 +1,364 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-================================================================================
-  putComposition (Referral Notes) — Sample XML for Referral Memorandum
-  Project:    NEHR Onboarding — Heart Clinic / MDXcess GCMS
-  Spec ref:   putComposition_v0.2_(RefNotes)_20251224.xlsx (Synapxe), Request tab
-  Generated:  2026-07-07
+<!-- ═══════════════════════════════════════════════════════════════════════════════════════════
+     Referral Note — contributed via putComposition (RefNotes variant)
 
-  SCENARIO
-  =================
-  Mr TAN AH BENG (71 y/o male, NRIC S5512345A) — the same continuity patient
-  used in the medication and allergy samples (AF + HTN). At his 2026-07-07
-  review, Dr Ruth Kam (MCR 04173D) decides his paroxysmal AF is inadequately
-  rate-controlled on medication and refers him to National Heart Centre
-  Singapore for electrophysiology assessment / catheter ablation.
+     Corrected from record 1 of /nehr/xml/referral, fetched LIVE on 19 Aug 2026 (20 records,
+     233 KB, HTTP 200). Validates against schemas/putComposition_Request.xsd.
 
-  DOCUMENT MODEL (differs from the six "flat" interfaces)
-  =================
-  putComposition is a DOCUMENT interface like putCardiology:
-    controlHeader > patient > composition
-    composition = metadata (type/title/status/creator/author/custodian/encounter)
-                  + repeating <section> blocks.
-  Each <section> carries exactly ONE <content>, and the content holds ONE kind
-  of payload:
-    - <referralRequest>  : the structured referral (status, type, specialty,
-                           requester, recipient, reason). Section TITLE MUST BE
-                           OMITTED for this section (spec, Request tab row 133).
-    - <other>            : label/value "notesItem" pairs (code 1) or a base64
-                           fileAttachment (code 2), for the free-text sections
-                           (Patient / Clinician / Referral Information).
+     NOTE: the service is putComposition, not "putReferral". Referral notes are one of several
+     document kinds carried by putComposition; the mapping template is
+     putComposition_v0.2_(RefNotes)_20251224.xlsx.
 
-  !! SPELLING IS INTENTIONAL: <practitoner> (sic) inside referralRequest
-     requester/recipient. Spec: "Keeping 'practitoner' name to avoid breaking
-     existing systems." DO NOT correct it — XSD validation will fail.
+     ⚠️ THE REFERRAL LETTER ITSELF IS MISSING. The source sends <file /> — empty — in all 20
+     records, while the template marks file Mandatory 1. So the message announces an attachment
+     and carries no attachment. Marked TODO_BASE64_ENCODED_PDF below; it is the headline blocker.
 
-  OPEN ITEMS (SPOC)
-  =================
-  1. Multiple <other> blocks per content: spec says each notesItem carries ONE
-     name+text pair and NEHR renders it as a single line item, so a section
-     like "Patient Information" needs several <other> blocks. Cardinality
-     (other 0..*) supports this — confirm reading with SPOC.
-  2. Service_Specialty_(NEHR) code for Cardiology assumed "NEHR_SS_0002" from
-     the spec's sample value — verify against the actual code-set file.
-  3. GCMS today stores referrals as FREE TEXT. Structured fields below marked
-     [GCMS-NEW] require the Windows-program schema/UI work (see dev task list NEHR_GCMS_StructuredData_Dev_Tasks_2026Jul07.md). ================================================================================
--->
-<putComposition>
+     TO CONFIRM WITH SYNAPXE: namespace still http://www.mohh.com/nehr (our XSD copy is the
+     2023Q4 build). See FIXES.md in this folder for every change and the open items.
+     ═══════════════════════════════════════════════════════════════════════════════════════════ -->
+<putComposition xmlns="http://www.mohh.com/nehr">
+	<!-- This service's controlHeader is INLINE and has NO msgType — the source correctly omits it.
+	     37 permitted srcApplication values; MDX-GCMS is not among them (registration pending). -->
+	<controlHeader>
+		<srcInstitution>9403258</srcInstitution>
+		<licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>
+		<srcApplication>MDX-GCMS</srcApplication>
+		<!-- The source truncates msgID at 20 chars ("b8a1bdb8-6f42-4a3f-8"), so the tail of the real
+		     GUID is unrecoverable from the payload. Emit the full GUID, unprefixed. maxLength 50. -->
+		<msgID>b8a1bdb8-6f42-4a3f-8000-000000000000</msgID>
+		<msgSequenceID>1</msgSequenceID>
+		<msgDateTime>2026-08-19T18:28:58+08:00</msgDateTime>
+	</controlHeader>
+	<patient>
+		<identification>
+			<id>C8974431</id>
+			<MRNNumber>MDX-GCMS^13001997</MRNNumber>
+			<!-- ⚠️ UNRESOLVED: "SP" means Singapore NRIC, but C8974431 is not an NRIC format and the
+			     patient's nationality is ID (Indonesia). This is almost certainly a foreign document
+			     needing FP or MP. Left as the source value because the correct code depends on which
+			     document was actually presented at registration — the clinic must set it from that,
+			     not from a fixed default. See FIXES.md. -->
+			<type>SP</type>
+		</identification>
+		<name>
+			<value>TAN RATNA MULYATI</value>
+			<!-- Template sample has no trailing period: "Ms" not "Ms." -->
+			<title>Ms</title>
+		</name>
+		<!-- contactDetails omitted: the source sends <address /> and <phone /> both empty, and the
+		     Readme forbids empty tags. -->
+		<dateOfBirth>1962-03-31</dateOfBirth>
+		<!-- UNRESOLVED — do not bulk-convert gender yet. Template samples M/F/U; the NHDD sample
+		     subset says C=Female, D=Male, E=Unknown; the live system emits C/D. If the real NHDD
+		     uses C/D/E, changing this breaks a correct mapping. Left as sent. See FIXES.md. -->
+		<gender>C</gender>
+		<nationality>ID</nationality>
+		<!-- race omitted: Mandatory in the template but sent empty in all 20 records. Fabricating it
+		     would be worse than omitting it. Real data gap at registration. -->
+		<!-- language omitted: sent empty. -->
+		<maritalStatus>2</maritalStatus>
+	</patient>
+	<composition>
+		<identifier>064e86ee-bed8-4043-a504-335ddcc98c4e1</identifier>
+		<!-- Template format CCYY-MM-DDThh:mm:ss+08:00 — whole seconds. The source emits 7-digit
+		     fractional seconds (…58.6675902+08:00). -->
+		<date>2026-08-19T18:28:58+08:00</date>
+		<createdDate>2026-08-19T18:28:58+08:00</createdDate>
+		<type>
+			<code>ReferralNote</code>
+			<codingSchemeName>Document_Type_(NEHR)</codingSchemeName>
+			<textDescription>Referral Note</textDescription>
+		</type>
+		<title>Referral to National Heart Centre Singapore - Electrophysiology</title>
+		<status>
+			<code>Final</code>
+			<codingSchemeName>Document_Status_(NEHR)</codingSchemeName>
+			<textDescription>Finalized</textDescription>
+		</status>
+		<!-- practitionerType = practitioner > identifier + name. Nothing else.
+		     The source adds <profession> (with an empty <coding/>) and a stray <system /> — neither
+		     exists in this schema. Both removed. -->
+		<creator>
+			<practitioner>
+				<identifier>M03009J</identifier>
+				<name>PHILIP KOH</name>
+			</practitioner>
+		</creator>
+		<!-- ⭑ The source names this child <compositionPractitioner>. The schema and the template both
+		     say <practitioner> — the same element name as in creator. -->
+		<author>
+			<practitioner>
+				<identifier>M03009J</identifier>
+				<name>PHILIP KOH</name>
+			</practitioner>
+		</author>
+		<custodian>
+			<identifier>9403258</identifier>
+			<location>
+				<name>The Heart Clinic</name>
+			</location>
+		</custodian>
+		<encounter>
+			<!-- Template: same event id and format as putEvent. The source sends a GUID
+			     (71b3b8e8-…-4eaad906ef2a) which links this referral to no visit. -->
+			<identifier>TODO_PUTEVENT_EVENT_ID</identifier>
+			<period>
+				<start>2026-08-19T18:28:58+08:00</start>
+				<end>2026-08-19T18:58:58+08:00</end>
+			</period>
+		</encounter>
 
-  <controlHeader>    <!-- [M] card 1     Grouping -->
-    <srcInstitution>9403258</srcInstitution>    <!-- [M] card 1     String      HCI code, Heart Clinic main branch -->
-    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>    <!-- [M] card 0..1  String(50)  HSCA Licensee (Item 5, Config Checklist) -->
-    <srcApplication>MDX-GCMS</srcApplication>    <!-- [M] card 1     String      Locked value identifying the GCMS software -->
-    <msgID>MDX-GCMS-REF-20260707-00001</msgID>    <!-- [M] card 1     String(50)  Unique GCMS-generated message ID -->
-    <msgSequenceID>498</msgSequenceID>    <!-- [M] card 1     Numeric(15) Monotonic per (dataType, srcApplication, srcInstitution) -->
-    <msgDateTime>2026-07-07T18:05:12+08:00</msgDateTime>    <!-- [M] card 1     DateTime    Message-construction time; +08:00 SG -->
-  </controlHeader>
+		<!-- ═══════════════════════════════════════════════════════════════════════════════════
+		     SECTIONS. The schema declares ONE repeating element, <section>, of type sectionType.
+		     The source invents five differently-named wrappers instead — CodeSection,
+		     PatientInformationSection, ClinicalInformationSection, ReferralInformationSection,
+		     AttachmentSection — none of which exist. Each is a <section>.
+		     Each section carries exactly 1 title, 1 code and 1 content (template row 132).
+		     ═══════════════════════════════════════════════════════════════════════════════════ -->
 
-  <patient>    <!-- [M] card 1     Grouping    Same continuity patient as med/allergy samples -->
-    <identification>      <!-- [M] card 1     Grouping -->
-      <id>S5512345A</id>      <!-- [M] card 0..1  String(40)  NRIC, uppercase -->
-      <MRNNumber>MDX-GCMS^13007891</MRNNumber>      <!-- [M] card 1     String(60)  GCMS internal MRN, prefixed with srcApplication -->
-      <type>SP</type>      <!-- [M] card 0..1  String(128) NHDD ID type: SP = Singapore Pink (Citizen) -->
-    </identification>
-    <name>      <!-- [M] card 0..1  Grouping -->
-      <value>TAN AH BENG</value>      <!-- [M] card 0..1  String(128) Patient legal name from Tbl_PatientParticular -->
-      <title>MR</title>      <!-- [O] card 0..1  String(10) -->
-    </name>
-    <dateOfBirth>1955-03-15</dateOfBirth>    <!-- [M] card 0..1  Date        71 y/o -->
-    <gender>M</gender>    <!-- [M] card 0..1  String(128) NHDD: M = Male -->
-    <race>CHN</race>    <!-- [M] card 0..1  String(128) NHDD: CHN = Chinese -->
-  </patient>
+		<!-- Section 1 — the referral request itself.
+		     No <title>: template row 133 says "Do not populate when content.referralRequest is
+		     populated." The source correctly omits it here. -->
+		<section>
+			<code>
+				<code>4</code>
+				<codingSchemeName>Section_Code_(NEHR)</codingSchemeName>
+				<textDescription>Referral Letter</textDescription>
+			</code>
+			<content>
+				<referralRequest>
+					<status>
+						<code>1</code>
+						<codingSchemeName>Referral_Status_(NEHR)</codingSchemeName>
+						<textDescription>Authorized</textDescription>
+					</status>
+					<identifier>MDX-GCMS-REF-000000412</identifier>
+					<type>
+						<code>4</code>
+						<codingSchemeName>Referral_Type_(NEHR)</codingSchemeName>
+						<textDescription>Consultation</textDescription>
+					</type>
+					<specialty>
+						<code>NEHR_SS_0002</code>
+						<codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
+						<textDescription>Cardiology</textDescription>
+					</specialty>
+					<!-- ⭑⭑ TWO SPELLINGS THAT LOOK LIKE MISTAKES BUT ARE NOT.
+					     <practitoner> is missing an "i", and <organisation> uses the British "s".
+					     Both are spelled that way in Synapxe's XSD *and* in the mapping template
+					     (rows 558, 562, 568, 572), so they are authoritative. The source "fixed"
+					     them to <practitioner> and <organization> and thereby broke them. -->
+					<requester>
+						<practitoner>
+							<identifier>M03009J</identifier>
+							<name>PHILIP KOH</name>
+						</practitoner>
+						<!-- requester/organisation is identifierType: identifier + name ONLY.
+						     The source also sends <type> here, which exists only under
+						     recipient/organisation. Removed. -->
+						<organisation>
+							<identifier>9403258</identifier>
+							<name>The Heart Clinic</name>
+						</organisation>
+					</requester>
+					<recipient>
+						<!-- recipient/organisation is organisationType, which DOES allow <type>. -->
+						<organisation>
+							<identifier>0116</identifier>
+							<name>National Heart Centre Singapore</name>
+							<type>
+								<code>2</code>
+								<codingSchemeName>Organisation_Type_(NEHR)</codingSchemeName>
+								<textDescription>Healthcare Provider</textDescription>
+							</type>
+						</organisation>
+					</recipient>
+					<!-- referralRequest/encounter holds ONLY <identifier>. The source nests a
+					     <period> here, which the schema does not allow at this level. -->
+					<encounter>
+						<identifier>TODO_PUTEVENT_EVENT_ID</identifier>
+					</encounter>
+					<dateSent>2026-08-19T18:28:58+08:00</dateSent>
+					<!-- reason omitted: the source sends <reason /> empty. Empty tags are forbidden. -->
+					<serviceRequested>
+						<code>NEHR_SS_0002</code>
+						<codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
+						<textDescription>Cardiology - Electrophysiology</textDescription>
+					</serviceRequested>
+				</referralRequest>
+			</content>
+		</section>
 
-  <composition>    <!-- [M] card 1     Grouping -->
+		<!-- Section 2 — Patient Information.
+		     The source sends code "Active" on Diagnosis_Status_(NEHR) here — a diagnosis-status
+		     code in a section-code slot, on every notes section. Wrong codeset entirely.
+		     Section_Code_(NEHR) documents a code only for the Referral Letter section ("4"), so
+		     these sections carry textDescription alone; the inner code is Optional and
+		     codingSchemeName may only be sent when code is. TO CONFIRM: whether Synapxe expects
+		     code "1" (Referral Notes Item) on these instead. See FIXES.md. -->
+		<section>
+			<title>Patient Information</title>
+			<code>
+				<textDescription>Patient Information</textDescription>
+			</code>
+			<content>
+				<!-- ⭑ The source wraps these in <Others>…</Others> in this one section (and omits the
+				     wrapper in the others). No such level exists — <other> repeats directly. -->
+				<other>
+					<code>
+						<code>1</code>
+						<codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
+						<textDescription>Notes Item</textDescription>
+					</code>
+					<extension>
+						<notesItem>
+							<name>Full Name</name>
+							<text>TAN RATNA MULYATI</text>
+						</notesItem>
+					</extension>
+				</other>
+				<other>
+					<code>
+						<code>1</code>
+						<codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
+						<textDescription>Notes Item</textDescription>
+					</code>
+					<extension>
+						<notesItem>
+							<name>NRIC</name>
+							<text>C8974431</text>
+						</notesItem>
+					</extension>
+				</other>
+				<other>
+					<code>
+						<code>1</code>
+						<codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
+						<textDescription>Notes Item</textDescription>
+					</code>
+					<extension>
+						<notesItem>
+							<name>Gender</name>
+							<text>Female</text>
+						</notesItem>
+					</extension>
+				</other>
+				<!-- ⚠️ THE SOURCE EMITS TWO MORE <Other> BLOCKS HERE, both named "Full Name" and both
+				     with NO <text>. notesItem requires name AND text (both Mandatory 1), so they are
+				     invalid; they are also duplicates of the first entry. Across the payload this
+				     pattern accounts for 60 of the 180 notes items. Dropped — see FIXES.md, which
+				     describes the loop bug that produces them. -->
+			</content>
+		</section>
 
-    <!-- Record identifier: unique, IMMUTABLE across amendments/cancellation.
-         [GCMS-NEW] proposed: Referral_ID (new Tbl_PatientReferral PK).       -->
-    <identifier>MDX-GCMS-REFDOC-000000412</identifier>    <!-- [M] card 1     String(2000) -->
+		<!-- Section 3 — Clinician Information. -->
+		<section>
+			<title>Clinician Information</title>
+			<code>
+				<textDescription>Clinician Information</textDescription>
+			</code>
+			<content>
+				<other>
+					<code>
+						<code>1</code>
+						<codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
+						<textDescription>Notes Item</textDescription>
+					</code>
+					<extension>
+						<notesItem>
+							<name>Referring Clinician</name>
+							<text>PHILIP KOH (MCR M03009J)</text>
+						</notesItem>
+					</extension>
+				</other>
+				<other>
+					<code>
+						<code>1</code>
+						<codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
+						<textDescription>Notes Item</textDescription>
+					</code>
+					<extension>
+						<notesItem>
+							<name>Clinic</name>
+							<text>The Heart Clinic</text>
+						</notesItem>
+					</extension>
+				</other>
+			</content>
+		</section>
 
-    <date>2026-07-07T17:55:00</date>    <!-- [M] card 1     DateTime    Last-updated timestamp of this version -->
-    <createdDate>2026-07-07T17:55:00</createdDate>    <!-- [M] card 1     DateTime    First-created timestamp -->
+		<!-- Section 4 — Referral Information.
+		     The source's only real entry here is "Reason for Referral" = "N/A". The Readme
+		     explicitly forbids placeholder values such as NA, so the whole notes item is dropped
+		     rather than contributed as text. If the clinic captures a real referral reason, send
+		     it here — and consider also populating referralRequest/reason, which is coded. -->
+		<section>
+			<title>Referral Information</title>
+			<code>
+				<textDescription>Referral Information</textDescription>
+			</code>
+			<content>
+				<other>
+					<code>
+						<code>1</code>
+						<codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
+						<textDescription>Notes Item</textDescription>
+					</code>
+					<extension>
+						<notesItem>
+							<name>Reason for Referral</name>
+							<text>TODO_REAL_REFERRAL_REASON</text>
+						</notesItem>
+					</extension>
+				</other>
+			</content>
+		</section>
 
-    <type>      <!-- [M] card 1     Grouping    What kind of document this is -->
-      <code>ReferralNote</code>      <!-- [M] card 0..1  String(50)  Fixed for referral memoranda -->
-      <codingSchemeName>Document_Type_(NEHR)</codingSchemeName>      <!-- [M] card 0..1  String(50) -->
-      <textDescription>Referral Note</textDescription>      <!-- [M] card 0..1  CLOB -->
-    </type>
-
-    <title>Referral to National Heart Centre Singapore - Electrophysiology</title>    <!-- [M] card 0..1  String(200) -->
-
-    <status>      <!-- [M] card 1     Grouping    Final | Corrected | Cancelled -->
-      <code>Final</code>      <!-- [M] card 0..1  String(50) -->
-      <codingSchemeName>Document_Status_(NEHR)</codingSchemeName>      <!-- [M] card 0..1  String(50) -->
-      <textDescription>Finalized</textDescription>      <!-- [M] card 0..1  CLOB -->
-    </status>
-
-    <creator>      <!-- [M] card 1     Grouping    Who created the record in GCMS -->
-      <practitioner>        <!-- [M] card 0..1  Grouping    (normal spelling HERE — sic only inside referralRequest) -->
-        <identifier>04173D</identifier>        <!-- [M] card 0..1  String      MCR of Dr Ruth Kam -->
-        <name>DR RUTH KAM</name>        <!-- [M] card 0..1  String(80) -->
-      </practitioner>
-    </creator>
-
-    <author>      <!-- [M] card 1..*  Grouping    Clinically responsible for the content -->
-      <practitioner>
-        <identifier>04173D</identifier>
-        <name>DR RUTH KAM</name>
-      </practitioner>
-    </author>
-
-    <custodian>      <!-- [M] card 1     Grouping    Org that maintains the source record -->
-      <identifier>9403258</identifier>      <!-- [M] card 0..1  String(50)  HCI code (falls back to HSCA licensee) -->
-      <location>        <!-- [O] card 0..*  Grouping -->
-        <name>Ruth Kam Heart and Arrhythmia Clinic</name>        <!-- [M] card 0..1  String(200) -->
-      </location>
-    </custodian>
-
-    <!-- Ties the referral to the visit at which it was raised. MUST equal the
-         putEvent event id for the same encounter.
-         [GCMS] Tbl_PatientAppointment.Appointment_ID                          -->
-    <encounter>      <!-- [O] card 0..1  Grouping -->
-      <identifier>7f3a9c21-88e4-4b1d-9a6e-3c5d10f2b4a8</identifier>      <!-- [M] card 1  String(1995) -->
-      <period>        <!-- [O] card 0..1  Grouping -->
-        <start>2026-07-07T16:30:00</start>        <!-- [O] card 0..1  DateTime -->
-        <end>2026-07-07T17:10:00</end>        <!-- [O] card 0..1  DateTime -->
-      </period>
-    </encounter>
-
-    <!-- ======================================================================
-         SECTION 1 — the structured referral request.
-         NOTE: NO <title> element in this section (spec row 133: do not
-         populate title when content.referralRequest is populated).
-         ====================================================================== -->
-    <section>      <!-- [M] card 0..*  Grouping -->
-      <code>        <!-- [M] card 0..1  Grouping -->
-        <code>4</code>        <!-- [O] card 0..1  String(50)  4 = Referral Letter -->
-        <codingSchemeName>Section_Code_(NEHR)</codingSchemeName>
-        <textDescription>Referral Letter</textDescription>        <!-- [M] card 0..1  CLOB -->
-      </code>
-      <content>        <!-- [M] card 1     Grouping -->
-        <referralRequest>          <!-- card 0..*, max 1 per referral letter -->
-          <status>            <!-- [M] card 1     Grouping -->
-            <code>1</code>            <!-- [M] card 0..1  String(50)  1 = Authorized, 4 = Cancelled -->
-            <codingSchemeName>Referral_Status_(NEHR)</codingSchemeName>
-            <textDescription>Authorized</textDescription>
-          </status>
-          <identifier>MDX-GCMS-REF-000000412</identifier>          <!-- [M] card 0..1  String(2000)  [GCMS-NEW] Referral_ID -->
-          <type>            <!-- [M] card 0..1  Grouping -->
-            <code>4</code>            <!-- [O] card 0..1  String(50)  spec sample: 4 = Consultation -->
-            <codingSchemeName>Referral_Type_(NEHR)</codingSchemeName>
-            <textDescription>Consultation</textDescription>
-          </type>
-          <specialty>            <!-- [M] card 0..1  Grouping    Discipline referred TO -->
-            <code>NEHR_SS_0002</code>            <!-- [M] card 0..1  String(50)  VERIFY vs Service_Specialty_(NEHR) code-set -->
-            <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
-            <textDescription>Cardiology</textDescription>
-          </specialty>
-          <requester>            <!-- [M] card 0..1  Grouping    Referring side (us) -->
-            <practitoner>              <!-- sic — spec-mandated spelling -->
-              <identifier>04173D</identifier>              <!-- [M] card 0..1  String      MCR -->
-              <name>DR RUTH KAM</name>              <!-- [M] card 0..1  String(80) -->
-            </practitoner>
-            <organisation>              <!-- [M] card 0..1  Grouping -->
-              <identifier>9403258</identifier>              <!-- [M] card 0..1  String(50)  our HCI -->
-              <name>Ruth Kam Heart and Arrhythmia Clinic</name>              <!-- [M] card 0..1  String(500) -->
-            </organisation>
-          </requester>
-          <recipient>            <!-- [M] card 0..*  Grouping    Receiving side -->
-            <!-- practitoner optional: named receiving doctor rarely known
-                 at source; omitted here.                                     -->
-            <organisation>
-              <identifier>0116</identifier>              <!-- [M] card 0..1  String(50)  NHCS HCI — VERIFY actual code -->
-              <name>National Heart Centre Singapore</name>
-              <type>                <!-- [O] card 0..1  Grouping -->
-                <code>2</code>                <!-- [O] card 0..1  String(50)  2 = Healthcare Provider -->
-                <codingSchemeName>Organisation_Type_(NEHR)</codingSchemeName>
-                <textDescription>Healthcare Provider</textDescription>
-              </type>
-            </organisation>
-          </recipient>
-          <encounter>            <!-- [O] card 0..1  Grouping    Visit the referral was raised at -->
-            <identifier>7f3a9c21-88e4-4b1d-9a6e-3c5d10f2b4a8</identifier>            <!-- same Appointment_ID as composition.encounter -->
-          </encounter>
-          <dateSent>2026-07-07T17:55:00</dateSent>          <!-- [O] card 0..1  DateTime -->
-          <reason>            <!-- [O] card 0..1  Grouping -->
-            <textDescription>Paroxysmal atrial fibrillation, symptomatic despite rate control</textDescription>            <!-- [M] card 0..1  CLOB -->
-          </reason>
-          <description>Referred for electrophysiology assessment and consideration of catheter ablation. Symptomatic paroxysmal AF with breakthrough episodes on bisoprolol; CHA2DS2-VASc 3, anticoagulated on apixaban.</description>          <!-- [O] card 0..1  CLOB -->
-          <serviceRequested>            <!-- [O] card 0..*  Grouping -->
-            <code>NEHR_SS_0002</code>
-            <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
-            <textDescription>Cardiology - Electrophysiology</textDescription>
-          </serviceRequested>
-        </referralRequest>
-      </content>
-    </section>
-
-    <!-- ======================================================================
-         SECTION 2 — "Patient Information": label/value pairs.
-         Each <other> = ONE notesItem pair; NEHR renders "name: text" lines.
-         ====================================================================== -->
-    <section>
-      <title>Patient Information</title>      <!-- [M] card 0..1  String(200)  populated for content.other sections -->
-      <code>
-        <textDescription>Patient Information</textDescription>        <!-- code omitted: no Section_Code value given for this section -->
-      </code>
-      <content>
-        <other>          <!-- card 0..*: one block per line item -->
-          <code>
-            <code>1</code>            <!-- 1 = Notes Item -->
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>            <!-- [M] card 1     exactly one concept inside -->
-            <notesItem>
-              <name>Full Name</name>              <!-- [M] card 1     CLOB -->
-              <text>TAN AH BENG</text>              <!-- [M] card 1     CLOB -->
-            </notesItem>
-          </extension>
-        </other>
-        <other>
-          <code>
-            <code>1</code>
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>
-            <notesItem>
-              <name>NRIC</name>
-              <text>S5512345A</text>
-            </notesItem>
-          </extension>
-        </other>
-        <other>
-          <code>
-            <code>1</code>
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>
-            <notesItem>
-              <name>Gender</name>
-              <text>Male</text>
-            </notesItem>
-          </extension>
-        </other>
-        <other>
-          <code>
-            <code>1</code>
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>
-            <notesItem>
-              <name>Medical History</name>
-              <text>Paroxysmal atrial fibrillation (2019); Hypertension (2015)</text>
-            </notesItem>
-          </extension>
-        </other>
-        <other>
-          <code>
-            <code>1</code>
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>
-            <notesItem>
-              <name>Drug Allergies</name>
-              <text>Aspirin - urticaria (documented 2026-05-12)</text>
-            </notesItem>
-          </extension>
-        </other>
-      </content>
-    </section>
-
-    <!-- ======================================================================
-         SECTION 3 — "Clinician Information" ====================================================================== -->
-    <section>
-      <title>Clinician Information</title>
-      <code>
-        <textDescription>Clinician Information</textDescription>
-      </code>
-      <content>
-        <other>
-          <code>
-            <code>1</code>
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>
-            <notesItem>
-              <name>Referring Clinician</name>
-              <text>Dr Ruth Kam (MCR 04173D)</text>
-            </notesItem>
-          </extension>
-        </other>
-        <other>
-          <code>
-            <code>1</code>
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>
-            <notesItem>
-              <name>Clinic</name>
-              <text>Ruth Kam Heart and Arrhythmia Clinic</text>
-            </notesItem>
-          </extension>
-        </other>
-      </content>
-    </section>
-
-    <!-- ======================================================================
-         SECTION 4 — "Referral Information": free-text clinical narrative.
-         This is where GCMS's existing free-text referral letter body maps
-         with NO data loss while the structured fields above are phased in.
-         ====================================================================== -->
-    <section>
-      <title>Referral Information</title>
-      <code>
-        <textDescription>Referral Information</textDescription>
-      </code>
-      <content>
-        <other>
-          <code>
-            <code>1</code>
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>
-            <notesItem>
-              <name>Reason for Referral</name>
-              <text>Symptomatic paroxysmal AF with breakthrough palpitations despite bisoprolol 5mg OM. Holter (24-hr, 2026-06-20) shows AF burden 18%. For EP assessment and consideration of catheter ablation.</text>
-            </notesItem>
-          </extension>
-        </other>
-        <other>
-          <code>
-            <code>1</code>
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>Notes Item</textDescription>
-          </code>
-          <extension>
-            <notesItem>
-              <name>Current Medications</name>
-              <text>Apixaban 5mg BD; Bisoprolol 5mg OM; Amlodipine 5mg OM</text>
-            </notesItem>
-          </extension>
-        </other>
-      </content>
-    </section>
-
-    <!-- ======================================================================
-         SECTION 5 (OPTIONAL) — the referral letter as a PDF attachment.
-         Include when GCMS generates a letter document; mirrors the
-         putCardiology attachment-only pattern. base64 truncated for sample.
-         ====================================================================== -->
-    <section>
-      <title>Referral Letter Attachment</title>
-      <code>
-        <textDescription>Referral Letter Attachment</textDescription>
-      </code>
-      <content>
-        <other>
-          <code>
-            <code>2</code>            <!-- 2 = File Attachment -->
-            <codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
-            <textDescription>File Attachment</textDescription>
-          </code>
-          <extension>
-            <fileAttachment>              <!-- [O] card 0..1  Grouping -->
-              <contentType>                <!-- [M] card 1 -->
-                <code>1</code>                <!-- 1 = PDF -->
-                <codingSchemeName>Attachment_Content_Type_(NEHR)</codingSchemeName>
-                <textDescription>PDF</textDescription>
-              </contentType>
-              <language>                <!-- [M] card 0..1 -->
-                <code>EN</code>
-                <codingSchemeName>Attachment_Language_(NEHR)</codingSchemeName>
-                <textDescription>English</textDescription>
-              </language>
-              <file>JVBERi0xLjcKJeLjz9MK...TRUNCATED-SAMPLE-BASE64...JSVFT0YK</file>              <!-- [M] card 1  base64 of the PDF -->
-              <size>48213</size>              <!-- [O] card 0..1  bytes -->
-              <title>07-Jul-2026_Referral Letter</title>              <!-- [M] card 0..1  String(200)  <DD-MMM-YYYY>_<Document Title>; required for NEHR UI -->
-              <sequenceId>1</sequenceId>              <!-- [O] card 0..1  Numeric(2) -->
-            </fileAttachment>
-          </extension>
-        </other>
-      </content>
-    </section>
-
-  </composition>
+		<!-- Section 5 — the attachment. -->
+		<section>
+			<title>Referral Letter Attachment</title>
+			<code>
+				<textDescription>Referral Letter Attachment</textDescription>
+			</code>
+			<content>
+				<other>
+					<code>
+						<!-- ⭑ Other_Code_(NEHR): 1 = Notes Item, 2 = File Attachment. The source sends
+						     code 1 with the description "File Attachment" — code and description
+						     disagree. For an attachment the code is 2. -->
+						<code>2</code>
+						<codingSchemeName>Other_Code_(NEHR)</codingSchemeName>
+						<textDescription>File Attachment</textDescription>
+					</code>
+					<extension>
+						<fileAttachment>
+							<contentType>
+								<code>1</code>
+								<codingSchemeName>Attachment_Content_Type_(NEHR)</codingSchemeName>
+								<!-- Mandatory; the source sends <textDescription /> empty. 1 = PDF. -->
+								<textDescription>PDF</textDescription>
+							</contentType>
+							<!-- ⭑ The source spells this <langauge> — the same typo as putCardiology.
+							     Schema and template both spell it <language>. -->
+							<language>
+								<code>EN</code>
+								<codingSchemeName>Attachment_Language_(NEHR)</codingSchemeName>
+								<textDescription>English</textDescription>
+							</language>
+							<!-- 🛑 THE BLOCKER. Mandatory 1, and the source sends <file /> empty in all
+							     20 records. This must be the base64-encoded referral letter PDF.
+							     putCardiology already encodes attachments correctly — reuse that code:
+							     base64 of the raw bytes, and <size> = the DECODED byte count. -->
+							<file>TODO_BASE64_ENCODED_PDF</file>
+							<size>0</size>
+							<!-- Template row 638 gives the naming convention when the source does not
+							     generate a name: <DD-MMM-YYYY>_<Document Title>. -->
+							<title>19-Aug-2026_Referral Letter</title>
+							<sequenceId>1</sequenceId>
+						</fileAttachment>
+					</extension>
+				</other>
+			</content>
+		</section>
+	</composition>
 </putComposition>

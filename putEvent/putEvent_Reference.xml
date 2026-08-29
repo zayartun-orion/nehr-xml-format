@@ -1,398 +1,65 @@
-<!--
-================================================================================
-  Multi-Patient putEvent Example — Heart Clinic
-  Project:    NEHR Onboarding (Phase 1 — Contribution only)
-  Companion:  NEHR_putEvent_Sample_Heart_Clinic.xml (single-patient template)
-  Generated:  2026-05-05
-
-  WHAT THIS FILE DEMONSTRATES
-  ---------------------------
-  How to handle 3 patients' visits in NEHR. Spoiler: you send 3 separate
-  putEvent XML messages, NOT one combined batch.
-
-  KEY FACT FROM THE SPEC (putEvent v0.2)
-  --------------------------------------
-  The putEvent root element has cardinality "1". The <patient> element under
-  it has cardinality "1". The <event> element has cardinality "0..1".
-
-  This means:
-    - One XML document = exactly one <putEvent> root.
-    - One <putEvent> = exactly one patient.
-    - One <putEvent> = at most one event (zero for Administrative/Cancel/Merge).
-
-  Spec's exact words on the event element (row 69 Definition):
-    "A patient episode/case can have multiple encounters. A putEvent message
-     will be sent FOR EACH ENCOUNTER and the value populated in the 'id' field
-     will be used to identify the episode/case that this encounter belongs to."
-
-  PRACTICAL CONSEQUENCE
-  ---------------------
-  3 patients with 1 visit each              = 3 separate putEvent messages
-  1 patient with 3 separate visits          = 3 separate putEvent messages
-  3 patients × 2 visits each                = 6 separate putEvent messages
-  Each message = one HTTPS+mTLS SOAP request to the NEHR endpoint.
-
-  THIS FILE ITSELF IS NOT A VALID SINGLE XML DOCUMENT
-  ---------------------------------------------------
-  XML requires exactly one root per document. Below are 3 distinct putEvent
-  documents stacked together for reading only — separated by big comment
-  dividers. DO NOT concatenate them and send as one payload. NEHR will reject.
-
-  Treat each <?xml ... ?> ... </putEvent> block as ONE separate transmission.
-================================================================================
--->
-
-
-<!-- ============================================================ -->
-<!-- ============================================================ -->
-<!-- MESSAGE #1 of 3                                              -->
-<!-- Patient: Singapore Citizen, NRIC, regular visit              -->
-<!-- HTTP request #1 → POST to NEHR endpoint, mTLS, SOAP-wrapped  -->
-<!-- ============================================================ -->
-<!-- ============================================================ -->
-
 <?xml version="1.0" encoding="UTF-8"?>
-<putEvent xmlns="http://www.synapxe.sg/nehr/putEvent">
-
-  <controlHeader>
-    <srcInstitution>9403258</srcInstitution>
-    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>
-    <srcApplication>MDX-GCMS</srcApplication>
-
-    <!-- Unique message ID (UUID is fine). -->
-    <msgID>MDX-GCMS-EVT-20260504-00001</msgID>
-
-    <!-- msgSequenceID increments per (data type, srcApplication, srcInstitution).
-         This is putEvent message #1 for today. -->
-    <msgSequenceID>1</msgSequenceID>
-
-    <msgDateTime>2026-05-04T18:30:00+08:00</msgDateTime>
-    <msgType>Clinical</msgType>
-  </controlHeader>
-
-  <patient>
-    <identification>
-      <id>S8743573C</id>
-      <MRNNumber>MDX-GCMS^13005116</MRNNumber>
-      <type>SP</type>             <!-- Singapore Pink IC -->
-    </identification>
-    <name>
-      <value>THALVINDERPAL SINGH SANDHU</value>
-      <title>MR</title>
-    </name>
-    <contactDetails>
-      <address>
-        <type>MAIN</type>
-        <streetLine1>BLK 123 #05-67</streetLine1>
-        <streetLine2>HOUGANG AVENUE 8</streetLine2>
-        <city>SINGAPORE</city>
-        <country>AU</country>     <!-- per NHDD JSON: AU = Singapore -->
-        <postalCode>530123</postalCode>
-      </address>
-      <phone>
-        <type>MOBILE</type>
-        <countryCode>65</countryCode>
-        <phoneNumber>91234567</phoneNumber>
-      </phone>
-    </contactDetails>
-    <dateOfBirth>1987-12-27</dateOfBirth>
-    <gender>D</gender>             <!-- per NHDD JSON: D = Male -->
-    <emailAddress>thalvinder.singh@example.com</emailAddress>
-    <nationality>EW</nationality>  <!-- per NHDD JSON: EW = Singapore Citizen -->
-    <race>HE</race>                <!-- per NHDD JSON: HE = Chinese -->
-    <residencyStatus>X</residencyStatus>  <!-- X = Citizen -->
-    <language>DA</language>        <!-- DA = English -->
-    <maritalStatus>6</maritalStatus>  <!-- 6 = Single -->
-  </patient>
-
-  <event>
-    <recordIdentifier>bc1de036-0af1-4170-99c0-2907e26cf75422</recordIdentifier>
-    <id>000583cd-4522-4c40-8724-62762d6a7f15</id>
-    <movementSequenceNo>1</movementSequenceNo>
-    <eventStartDate>2026-05-04T15:30:00+08:00</eventStartDate>
-    <eventEndDate>2026-05-04T16:00:00+08:00</eventEndDate>
-    <cancellationNotice>false</cancellationNotice>
-    <institution>9403258</institution>
-    <serviceSpecialty>
-      <code>NEHR_SS_0002</code>
-      <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
-      <textDescription>Cardiology</textDescription>
-    </serviceSpecialty>
-    <patientType>
-      <code>O</code>
-      <codingSchemeName>Patient_Type_(NEHR)</codingSchemeName>
-      <textDescription>Outpatient</textDescription>
-    </patientType>
-    <eventType>
-      <code>4</code>
-      <codingSchemeName>Movement_Category_(NEHR)</codingSchemeName>
-      <textDescription>Outpatient Visit</textDescription>
-    </eventType>
-    <movementType>
-      <code>1</code>
-      <codingSchemeName>Visit_Type_(NEHR)</codingSchemeName>
-      <textDescription>Primary Care Visit</textDescription>
-    </movementType>
-    <attendingClinician>
-      <id>04173D</id>
-      <name>Ruth Kam</name>
-    </attendingClinician>
-  </event>
-
+<!-- Namespace taken verbatim from putEvent_Request.xsd (embedded in the AP481 spec, 2023Q4 build).
+     TO CONFIRM WITH SYNAPXE: that the current schema still uses this namespace, since the bundled
+     XSD predates licenseeNumber (added Feb-2024 by CR1227). See FIXES.md > "Questions for Synapxe". -->
+<putEvent xmlns="http://www.mohh.com/nehr">
+	<controlHeader>
+		<srcInstitution>9403258</srcInstitution>
+		<licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>
+		<srcApplication>MDX-GCMS</srcApplication>
+		<msgID>5cac57ff-8f38-4cef-a471-9c2cebaa63d8</msgID>
+		<msgSequenceID>1</msgSequenceID>
+		<msgDateTime>2026-08-07T22:40:35+08:00</msgDateTime>
+		<msgType>Clinical</msgType>
+	</controlHeader>
+	<patient>
+		<identification>
+			<id>S2735943D</id>
+			<MRNNumber>MDX-GCMS^13034023</MRNNumber>
+			<type>SP</type>
+		</identification>
+		<name>
+			<value>GATCHALIAN FERDINAND PAGUIO</value>
+			<title>Mr</title>
+		</name>
+		<dateOfBirth>1965-12-30</dateOfBirth>
+		<!-- UNRESOLVED — do not bulk-convert gender yet. Template row 49 samples M/F/U;
+		     the NHDD sample subset says C=Female, D=Male, E=Unknown; the live system emits C/D.
+		     If the real NHDD uses C/D/E, changing to M breaks a correct mapping. See FIXES.md. -->
+		<gender>M</gender>
+		<nationality>PH</nationality>
+		<maritalStatus>2</maritalStatus>
+	</patient>
+	<event>
+		<recordIdentifier>00899ce2-8d28-4caa-b0d5-300b0d7c454b1</recordIdentifier>
+		<id>0708202610131124913034023</id>
+		<movementSequenceNo>1</movementSequenceNo>
+		<eventStartDate>2026-08-07T10:13:11</eventStartDate>
+		<cancellationNotice>false</cancellationNotice>
+		<institution>9403258</institution>
+		<serviceSpecialty>
+			<code>NEHR_SS_0002</code>
+			<codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
+			<textDescription>Cardiology</textDescription>
+		</serviceSpecialty>
+		<patientType>
+			<code>O</code>
+			<codingSchemeName>Patient_Type_(NEHR)</codingSchemeName>
+			<textDescription>Outpatient</textDescription>
+		</patientType>
+		<eventType>
+			<code>4</code>
+			<codingSchemeName>Movement_Category_(NEHR)</codingSchemeName>
+			<textDescription>Outpatient Visit</textDescription>
+		</eventType>
+		<attendingClinician>
+			<id>M03009J</id>
+			<name>PHILIP KOH</name>
+		</attendingClinician>
+		<movementType>
+			<code>1</code>
+			<codingSchemeName>Visit_Type_(NEHR)</codingSchemeName>
+			<textDescription>Primary Care Visit</textDescription>
+		</movementType>
+	</event>
 </putEvent>
-
-<!-- END OF MESSAGE #1 — separate HTTP transaction ends here -->
-
-
-<!-- ============================================================ -->
-<!-- ============================================================ -->
-<!-- MESSAGE #2 of 3                                              -->
-<!-- Patient: Foreign passport holder (different identification)  -->
-<!-- HTTP request #2 → POST to NEHR endpoint                      -->
-<!--                                                              -->
-<!-- WHAT'S DIFFERENT FROM MESSAGE #1                             -->
-<!--   - msgID is different (every message has its own)           -->
-<!--   - msgSequenceID = 2 (incremented from previous)            -->
-<!--   - identification.type = "FP" (Foreign Travel Document)     -->
-<!--   - identification.id = passport number, not NRIC            -->
-<!--   - patient.nationality is non-Singapore                     -->
-<!--   - patient.residencyStatus = "Q" (Alien)                    -->
-<!-- ============================================================ -->
-<!-- ============================================================ -->
-
-<?xml version="1.0" encoding="UTF-8"?>
-<putEvent xmlns="http://www.synapxe.sg/nehr/putEvent">
-
-  <controlHeader>
-    <srcInstitution>9403258</srcInstitution>
-    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>
-    <srcApplication>MDX-GCMS</srcApplication>
-    <msgID>MDX-GCMS-EVT-20260504-00002</msgID>
-    <msgSequenceID>2</msgSequenceID>
-    <msgDateTime>2026-05-04T18:30:05+08:00</msgDateTime>
-    <msgType>Clinical</msgType>
-  </controlHeader>
-
-  <patient>
-    <identification>
-      <id>MB20F2522</id>           <!-- Foreign passport number, not NRIC -->
-      <MRNNumber>MDX-GCMS^13005788</MRNNumber>
-      <type>FP</type>               <!-- FP = Foreign Travel Document -->
-    </identification>
-    <name>
-      <value>ALI NOORDEEN</value>
-      <title>MR</title>
-    </name>
-    <contactDetails>
-      <phone>
-        <type>MOBILE</type>
-        <countryCode>65</countryCode>
-        <phoneNumber>96724567</phoneNumber>
-      </phone>
-      <!-- Address omitted — foreign patient, may not have local address.
-           Per no-empty-tags rule: omit the entire <address> block, not
-           emit it with empty children. -->
-    </contactDetails>
-    <dateOfBirth>1958-10-19</dateOfBirth>
-    <gender>D</gender>             <!-- D = Male -->
-    <nationality>EI</nationality>  <!-- per NHDD JSON: EI = Chinese (nationality) -->
-    <race>HE</race>                <!-- HE = Chinese (race) -->
-    <residencyStatus>Q</residencyStatus>  <!-- Q = Alien (foreigner) -->
-    <language>DA</language>
-    <maritalStatus>7</maritalStatus>  <!-- 7 = Married -->
-  </patient>
-
-  <event>
-    <!-- DIFFERENT recordIdentifier from message #1 — this is a different visit. -->
-    <recordIdentifier>a7379452-3e0b-48d7-a6d8-2aeb1fd4b9a722</recordIdentifier>
-    <id>00073147-38e1-4554-a51c-4ddcce98a42e</id>
-    <movementSequenceNo>1</movementSequenceNo>
-    <eventStartDate>2026-05-04T11:00:00+08:00</eventStartDate>
-    <eventEndDate>2026-05-04T11:30:00+08:00</eventEndDate>
-    <cancellationNotice>false</cancellationNotice>
-    <institution>9403258</institution>
-    <serviceSpecialty>
-      <code>NEHR_SS_0002</code>
-      <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
-      <textDescription>Cardiology</textDescription>
-    </serviceSpecialty>
-    <patientType>
-      <code>O</code>
-      <codingSchemeName>Patient_Type_(NEHR)</codingSchemeName>
-      <textDescription>Outpatient</textDescription>
-    </patientType>
-    <eventType>
-      <code>4</code>
-      <codingSchemeName>Movement_Category_(NEHR)</codingSchemeName>
-      <textDescription>Outpatient Visit</textDescription>
-    </eventType>
-    <movementType>
-      <code>1</code>
-      <codingSchemeName>Visit_Type_(NEHR)</codingSchemeName>
-      <textDescription>Primary Care Visit</textDescription>
-    </movementType>
-    <attendingClinician>
-      <id>04173D</id>
-      <name>Ruth Kam</name>
-    </attendingClinician>
-  </event>
-
-</putEvent>
-
-<!-- END OF MESSAGE #2 — separate HTTP transaction ends here -->
-
-
-<!-- ============================================================ -->
-<!-- ============================================================ -->
-<!-- MESSAGE #3 of 3                                              -->
-<!-- Patient: Walk-in / unknown ID at registration                -->
-<!--          (Tbl_NRCPatient flow)                                -->
-<!-- HTTP request #3 → POST to NEHR endpoint                      -->
-<!--                                                              -->
-<!-- WHAT'S DIFFERENT FROM MESSAGES #1 / #2                       -->
-<!--   - identification.type = "NA" (Not Applicable / Temporary)  -->
-<!--   - identification.id = MRN, not a real ID document          -->
-<!--   - identification.MRNNumber = same as id (per Guide)        -->
-<!--   - Several optional demographic fields omitted              -->
-<!--     (no DOB confirmation, no nationality, etc.)              -->
-<!-- ============================================================ -->
-<!-- ============================================================ -->
-
-<?xml version="1.0" encoding="UTF-8"?>
-<putEvent xmlns="http://www.synapxe.sg/nehr/putEvent">
-
-  <controlHeader>
-    <srcInstitution>9403258</srcInstitution>
-    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>
-    <srcApplication>MDX-GCMS</srcApplication>
-    <msgID>MDX-GCMS-EVT-20260504-00003</msgID>
-    <msgSequenceID>3</msgSequenceID>
-    <msgDateTime>2026-05-04T18:30:10+08:00</msgDateTime>
-    <msgType>Clinical</msgType>
-  </controlHeader>
-
-  <patient>
-    <identification>
-      <!-- Per Guide rule for unknown ID: id = MRNNumber.
-           Tbl_NRCPatient.RegNo (e.g. "NRCNRC17000622") used as the MRN. -->
-      <id>NRCNRC17000622</id>
-      <MRNNumber>MDX-GCMS^NRCNRC17000622</MRNNumber>
-      <type>NA</type>               <!-- NA = Not Applicable / Temporary -->
-    </identification>
-    <name>
-      <value>XUAN YUANYUAN</value>
-      <title>MS</title>
-    </name>
-    <!-- contactDetails omitted entirely — none captured for walk-in patient.
-         Per no-empty-tags rule, the parent grouping is dropped. -->
-    <dateOfBirth>1990-01-01</dateOfBirth>  <!-- Year-only DOB defaulted to YYYY-01-01 per Guide -->
-    <gender>C</gender>             <!-- C = Female -->
-    <race>HE</race>                <!-- Captured at registration -->
-    <!-- nationality, language, maritalStatus, residencyStatus all omitted —
-         not collected for walk-ins. NEHR will accept the message because
-         these are Optional. -->
-  </patient>
-
-  <event>
-    <recordIdentifier>cc20ff80-1234-5678-90ab-1234567890ab</recordIdentifier>
-    <id>00099999-aaaa-bbbb-cccc-ddddeeeeffff</id>
-    <movementSequenceNo>1</movementSequenceNo>
-    <eventStartDate>2026-05-04T17:00:00+08:00</eventStartDate>
-    <eventEndDate>2026-05-04T17:25:00+08:00</eventEndDate>
-    <cancellationNotice>false</cancellationNotice>
-    <institution>9403258</institution>
-    <serviceSpecialty>
-      <code>NEHR_SS_0002</code>
-      <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
-      <textDescription>Cardiology</textDescription>
-    </serviceSpecialty>
-    <patientType>
-      <code>O</code>
-      <codingSchemeName>Patient_Type_(NEHR)</codingSchemeName>
-      <textDescription>Outpatient</textDescription>
-    </patientType>
-    <eventType>
-      <code>4</code>
-      <codingSchemeName>Movement_Category_(NEHR)</codingSchemeName>
-      <textDescription>Outpatient Visit</textDescription>
-    </eventType>
-    <movementType>
-      <code>1</code>
-      <codingSchemeName>Visit_Type_(NEHR)</codingSchemeName>
-      <textDescription>Primary Care Visit</textDescription>
-    </movementType>
-    <attendingClinician>
-      <id>04173D</id>
-      <name>Ruth Kam</name>
-    </attendingClinician>
-  </event>
-
-</putEvent>
-
-<!-- END OF MESSAGE #3 — separate HTTP transaction ends here -->
-
-
-<!--
-================================================================================
-  TRANSMISSION GUIDANCE FOR THE DEVELOPER
-================================================================================
-
-  1) ONE PUTEVENT PER VISIT, ONE HTTP REQUEST PER PUTEVENT.
-     - 3 patients with 1 visit each      = 3 putEvent messages = 3 HTTP calls
-     - 1 patient with 3 separate visits  = 3 putEvent messages = 3 HTTP calls
-     - 3 patients × 2 visits each        = 6 putEvent messages = 6 HTTP calls
-
-  2) IDENTIFIER RULES ACROSS MULTIPLE MESSAGES
-     msgID            — UNIQUE per message. Generate a new UUID/GUID each time.
-                        Different across all 3 messages above.
-     msgSequenceID    — INCREMENTAL per (interface + srcApplication + srcInstitution).
-                        For putEvent, today's counter goes 1, 2, 3, ...
-                        DO NOT reset per patient — it's a global counter for
-                        the interface, not per-patient.
-     msgDateTime      — Current send datetime, ISO 8601, +08:00 timezone.
-                        Each message gets its own (often a few seconds apart).
-     recordIdentifier — UNIQUE per VISIT (not per message). Same recordIdentifier
-                        is reused only for amendments/cancellations to the SAME
-                        visit. Different visits = different recordIdentifiers.
-
-  3) BATCH MODE vs REAL TIME — TIMING ONLY, NOT STRUCTURE
-     Heart Clinic sends batch end-of-day (Configuration Checklist Item 14).
-     This affects WHEN messages are sent, not HOW they're structured. Even in
-     batch mode, each visit is its own message — the adapter accumulates
-     messages during the day and sends them in sequence (e.g. all 30 of today's
-     finished appointments fired one after another at 7pm).
-     Per Guide page 4: "If batching is needed, source system to ensure that
-     daily batch job is completed within the day."
-
-  4) PARALLEL vs SEQUENTIAL SENDING
-     The spec doesn't mandate sequential. Practically:
-     - Sequential is simpler (one message → wait for response → next).
-     - Parallel risks msgSequenceID ordering issues if the adapter fires from
-       multiple threads. Recommended: serialize within the adapter so messages
-       go out in msgSequenceID order, even if their HTTP responses come back
-       out of order.
-     - The 72-hour rule (Guide page 4) applies to each visit individually:
-       send each message within 72 hours of its eventStartDate.
-
-  5) WHAT IF ONE MESSAGE FAILS?
-     Per Guide rectification rules:
-     - Re-send messages that failed during downtime once system is up.
-     - For erroneous data: cancel the existing record (same recordIdentifier),
-       then submit a new record with corrected data.
-     - Use the putReconciliationFile interface to confirm what NEHR received.
-
-  6) WHAT IF YOU ACCIDENTALLY SEND TWO MESSAGES WITH SAME msgID?
-     NEHR uniqueness key = srcInstitution + srcApplication + msgID +
-     msgSequenceID + msgDateTime. If all 5 match, the FIRST is persisted; the
-     SECOND is rejected. Adapter must guarantee msgID uniqueness.
-
-  7) WHAT IF YOU ACCIDENTALLY SEND TWO MESSAGES WITH SAME recordIdentifier?
-     NEHR uniqueness here is the recordIdentifier itself. Per Guide:
-     "If 2 messages have the same record identifier, the message with a LARGER
-      msgSequenceID will overwrite the other in NEHR."
-     This is the AMENDMENT mechanism. To update a visit, send another message
-     with same recordIdentifier and a higher msgSequenceID.
-     Different visits MUST have different recordIdentifiers.
-
-================================================================================
--->
