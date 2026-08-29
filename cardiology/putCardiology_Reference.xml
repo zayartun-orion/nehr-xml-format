@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+================================================================================
+  putCardiology — Sample XML (PDF attachment route)
+  Project:    NEHR Onboarding — Heart Clinic / MDXcess GCMS
+  Spec ref:   putCardiology_v0.2_20251224.xlsx (Synapxe), Request tab
+  Generated:  2026-06-11
+
+  SCENARIO
+  =================
+  Mr TAN AH BENG (70 y/o male, NRIC S5512345A) — same cardiology patient as the
+  other samples (AF + HTN). At his 2026-05-12 visit, Dr Ruth Kam (MCR 04173D)
+  performs a 12-lead ECG in-clinic. GCMS stores the result as a PDF report.
+  We contribute it via putCardiology as a base64-embedded PDF attachment.
+
+  WHY THE "ATTACHMENT" ROUTE
+  =================
+  putCardiology is a clinical-DOCUMENT interface and can carry the report two ways:
+    (1) content > Composition  — full structured/CDA body (large mapping job)
+    (2) fileAttachment         — the report FILE as base64 (PDF/JPG)
+  The client confirmed cardiac results are kept as PDFs, so we use route (2):
+  omit <content> entirely and embed the PDF under <fileAttachment>. Per spec
+  row 486, <title> is populated when <content> is excluded so NEHR can label
+  the attachment on its UI.
+
+  ** DEV NOTE — displayMethod / content (CONFIRM WITH SPOC) **
+  The displayMethod flag ("0"=attachment only, "1"=discrete+attachment) lives
+  INSIDE content > Composition. This sample omits <content> completely and relies
+  on <fileAttachment> + <title>. Confirm with the SPOC whether NEHR accepts
+  content being omitted entirely, OR whether it still wants a minimal Composition
+  shell carrying displayMethod="0". If the latter, add a <content><Composition>
+  block with displayMethod=0 and the mandatory Composition fields.
+
+  ANNOTATION FORMAT
+  =================
+    [M | O | C]  Significance: M=Mandatory, O=Optional, C=Conditional
+    then cardinality and data type, then a justification.
+
+  CODESETS (real values, CodeSetInventory v2.29, 24 Dec 2025)
+  =================
+    docType            Document_Type_(NEHR)            Cardiology = "Cardiology report"
+    status             Document_Status_(NEHR)          Final      = "Finalized"
+    attachmentCategory Attachment_Category_(NEHR)      1          = "Cardiology report"
+    contentType        Attachment_Content_Type_(NEHR)  1          = "PDF"
+    language           Attachment_Language_(NEHR)      EN         = "English"
+    report.type        Cardiology_Procedure_Category_(NEHR) 1     = "Medical"
+    report.name        (no codeset — free text in textDescription)
+
+  SIZE RULE
+  =================
+  Per-message cap = 3MB and it counts the BASE64 text (≈ +33% vs the raw file),
+  so the source PDF should be under ~2.2MB. eventID + srcApplication + institution
+  + docType + accessionNumber combined length must not exceed 1995 chars.
+================================================================================
+-->
+
+<putCardiology xmlns="http://www.synapxe.sg/nehr/putCardiology">  <!-- [M] card 1  Grouping (root) -->
+
+  <controlHeader>                                       <!-- [M] card 1     Grouping -->
+    <srcInstitution>9403258</srcInstitution>            <!-- [M] card 1     String(50)  HCI code, Heart Clinic main branch -->
+    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>  <!-- [M] card 0..1  String(50)  HSCA Licensee -->
+    <srcApplication>MDX-GCMS</srcApplication>           <!-- [M] card 1     String(50)  Locked GCMS software identifier -->
+    <msgID>MDX-GCMS-CARD-20260512-00001</msgID>         <!-- [M] card 1     String(50)  Unique GCMS message ID -->
+    <msgSequenceID>318</msgSequenceID>                  <!-- [M] card 1     Long(15)    Monotonic source sequence -->
+    <msgDateTime>2026-05-12T16:05:00+08:00</msgDateTime>  <!-- [M] card 1     DateTime -->
+  </controlHeader>
+
+  <patient>                                             <!-- [M] card 1     Grouping -->
+    <identification>                                    <!-- [M] card 1     Grouping -->
+      <id>S5512345A</id>                                <!-- [M] card 0..1  String(20)  NRIC -->
+      <MRNNumber>MDX-GCMS^13007891</MRNNumber>          <!-- [M] card 1     String(60)  GCMS MRN, prefixed with srcApplication -->
+      <type>SP</type>                                   <!-- [M] card 0..1  String(128) NHDD ID type: SP = Singapore Pink (Citizen) -->
+    </identification>
+    <name>                                              <!-- [M] card 0..1  Grouping -->
+      <value>TAN AH BENG</value>                        <!-- [M] card 0..1  String(128) -->
+    </name>
+    <dateOfBirth>1955-03-15</dateOfBirth>               <!-- [M] card 0..1  Date -->
+    <gender>M</gender>                                  <!-- [M] card 0..1  String(128) NHDD: M = Male -->
+    <race>CHN</race>                                    <!-- [M] card 0..1  String(128) NHDD: CHN = Chinese -->
+  </patient>
+
+  <document>                                            <!-- [M] card 1     Grouping (the cardiology document) -->
+    <id>MDX-GCMS-CARD-13007891-001</id>                 <!-- [M] card 0..1  String(2000) Stable per-document ID -->
+    <lastUpdatedTime>2026-05-12T16:00:00+08:00</lastUpdatedTime>  <!-- [M] card 0..1  DateTime -->
+    <eventID>evt-2026-05-12-001</eventID>               <!-- [M] card 1     String(2000) MUST match the putEvent eventID for this visit -->
+    <institution>9403258</institution>                  <!-- [M] card 1     String(50)  HCI code where the report was produced -->
+
+    <docType>                                           <!-- [M] card 1     Grouping -->
+      <code>Cardiology</code>                           <!-- [M] card 0..1  String(50)  Document_Type_(NEHR) -->
+      <codingSchemeName>Document_Type_(NEHR)</codingSchemeName>  <!-- [M] card 0..1  String(50) -->
+      <textDescription>Cardiology report</textDescription>      <!-- [M] card 0..1  String(CLOB) -->
+    </docType>
+
+    <status>                                            <!-- [M] card 0..1  Grouping -->
+      <code>Final</code>                                <!-- [M] card 0..1  String(50)  Document_Status_(NEHR): Final = Finalized -->
+      <codingSchemeName>Document_Status_(NEHR)</codingSchemeName>  <!-- [M] card 0..1  String(50) -->
+      <textDescription>Finalized</textDescription>      <!-- [M] card 0..1  String(CLOB) -->
+    </status>
+
+    <author>                                            <!-- [M] card 0..1  Grouping  (who authored the document) -->
+      <id>04173D</id>                                   <!-- [M] card 0..1  String(1919) MCR of Dr Ruth Kam -->
+      <name>RUTH KAM</name>                             <!-- [M] card 0..1  String(80) -->
+    </author>
+
+    <cardiologyReports>                                 <!-- [M] card 0..1  Grouping -->
+      <cardiologyReport>                                <!-- [M] card 1..*  Grouping  (one report) -->
+        <startDateTime>2026-05-12T15:20:00+08:00</startDateTime>  <!-- [O] card 0..1  DateTime  when the ECG was taken -->
+        <reportDateTime>2026-05-12T15:45:00+08:00</reportDateTime>  <!-- [O] card 0..1  DateTime  when the report was issued -->
+        <name>                                          <!-- [M] card 0..1  Grouping -->
+          <textDescription>12-lead ECG</textDescription>  <!-- [M] card 0..1  String(CLOB) free text — no codeset for report name -->
+        </name>
+        <type>                                          <!-- [O] card 0..1  Grouping -->
+          <code>1</code>                                <!-- [M-if-parent] card 0..1  String(50)  Cardiology_Procedure_Category_(NEHR): 1 = Medical -->
+          <codingSchemeName>Cardiology_Procedure_Category_(NEHR)</codingSchemeName>  <!-- card 0..1  String(50) -->
+          <textDescription>Medical</textDescription>    <!-- [M] card 0..1  String(CLOB) -->
+        </type>
+        <primaryOperator>                               <!-- [O] card 0..1  Grouping -->
+          <id>04173D</id>                               <!-- [M-if-parent] card 0..1  String(1919) -->
+          <name>RUTH KAM</name>                         <!-- [M-if-parent] card 0..1  String(80) -->
+        </primaryOperator>
+      </cardiologyReport>
+    </cardiologyReports>
+  </document>
+
+  <!-- content  [M] card 0..1  OMITTED — using attachment-only route (see DEV NOTE in header). -->
+
+  <fileAttachment>                                      <!-- [M] card 0..*  Grouping  (the report file) -->
+    <sequenceNo>1</sequenceNo>                          <!-- [M] card 1     Numeric(30)  rendering order; incremental -->
+    <attachmentCategory>                                <!-- [M] card 0..1  Grouping -->
+      <code>1</code>                                    <!-- [M] card 0..1  String(50)  Attachment_Category_(NEHR): 1 = Cardiology report -->
+      <codingSchemeName>Attachment_Category_(NEHR)</codingSchemeName>  <!-- [M] card 0..1  String(50) -->
+      <textDescription>Cardiology report</textDescription>  <!-- [M] card 0..1  String(CLOB) -->
+    </attachmentCategory>
+    <contentType>                                       <!-- [M] card 1     Grouping -->
+      <code>1</code>                                    <!-- [M] card 0..1  String(50)  Attachment_Content_Type_(NEHR): 1 = PDF -->
+      <codingSchemeName>Attachment_Content_Type_(NEHR)</codingSchemeName>  <!-- [M] card 0..1  String(50) -->
+      <textDescription>PDF</textDescription>            <!-- [M] card 0..1  String(CLOB) -->
+    </contentType>
+    <language>                                          <!-- [M] card 0..1  Grouping -->
+      <code>EN</code>                                   <!-- [M] card 0..1  String(50)  Attachment_Language_(NEHR): EN = English -->
+      <codingSchemeName>Attachment_Language_(NEHR)</codingSchemeName>  <!-- [M] card 0..1  String(50) -->
+      <textDescription>English</textDescription>        <!-- [M] card 0..1  String(CLOB) -->
+    </language>
+    <data>JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1BhZ2Uv... [BASE64 OF THE ECG REPORT PDF — TRUNCATED] ...DQolJUVPRg==</data>
+                                                        <!-- [M] card 1     BLOB  base64 of the actual PDF file. Real value is the full base64 string (PDF < ~2.2MB so base64 < 3MB cap). -->
+    <size>248173</size>                                 <!-- [O] card 0..1  Numeric(30)  raw PDF size in bytes -->
+    <title>12-lead ECG Report - TAN AH BENG - 2026-05-12</title>
+                                                        <!-- [M] card 0..1  String(200)  shown on NEHR UI (required because <content> is excluded) -->
+  </fileAttachment>
+
+</putCardiology>

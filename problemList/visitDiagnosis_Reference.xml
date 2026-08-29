@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+================================================================================
+  putPatientProblemList (VISIT DIAGNOSIS variant) — Sample XML
+  Project:    NEHR Onboarding — Heart Clinic / MDXcess GCMS
+  Spec ref:   putPatientProblemList_v0.2_(VD)_20251224.xlsx (Synapxe), Request tab
+  Generated:  2026-07-08
+  SUPERSEDES: the May PPL deliverables (NEHR_putPatientProblemList_Sample_Full /
+              _Sample_Mandatory / _Reference_AllFieldsFilled, PPL walkthrough,
+              PPL_Developer_Reference.xlsx). Decision 2026-07-08: contribute
+              VISIT DIAGNOSIS, not PPL (NEHR 07-Jul: VD is the outpatient norm).
+
+  SCENARIO
+  =================
+  Mr TAN AH BENG (71 y/o male, NRIC S5512345A) — same continuity patient as the
+  medication / allergy / referral samples. His 2026-07-07 consultation with
+  Dr Ruth Kam (the visit that also produced the referral sample): two chronic
+  active diagnoses reviewed and coded — Paroxysmal AF and Essential HTN.
+
+  VISIT-DIAGNOSIS RULES (vs the old PPL model)
+  =================
+  1. SAME web service + reconciliation filenames as PPL — only the payload
+     semantics change. listType is the switch:
+        listType = "Visit Diagnosis List"   (LITERAL, CASE-SENSITIVE)
+  2. recordIdentifier is assigned PER VISIT — a fresh list every visit, never
+     reused across visits. (PPL would have required one longitudinal list.)
+     [GCMS] propose: <Appointment_ID>-VD
+  3. eventId MUST equal the putEvent id for the same visit ([GCMS]
+     Tbl_PatientAppointment.Appointment_ID).
+  4. VD is MANDATORY for every actualised outpatient visit with >=1 diagnosis;
+     all diagnoses of the same visit go in ONE message payload.
+  5. Non-diagnostic visit (e.g. report collection): still send, with an
+     administrative diagnosis carrying the non-diagnostic SNOMED-CT code —
+     ask SPOC for the exact concept code Synapxe expects.
+  6. Diagnosis coding = SNOMED CT (SG Extension); codingSchemeVersion carries
+     the SNOMED release agreed with the standards team (e.g. "Jul2024").
+     SNOMED codes below are indicative — [VERIFY] against the SG Extension
+     release GCMS adopts before SIT.
+  7. Amendment/cancellation: resend with the SAME recordIdentifier and
+     problem ids; listStatus/reasonForCancellation signal cancellation.
+================================================================================
+-->
+<putPatientProblemList>
+
+  <controlHeader>                                       <!-- [M] card 1     Grouping -->
+    <srcInstitution>9403258</srcInstitution>            <!-- [M] card 1     String      HCI code, Heart Clinic main branch -->
+    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>  <!-- [M] card 0..1  String(50) -->
+    <srcApplication>MDX-GCMS</srcApplication>           <!-- [M] card 1     String -->
+    <msgID>MDX-GCMS-VD-20260707-00001</msgID>           <!-- [M] card 1     String(50)  Unique per message per data type -->
+    <msgSequenceID>499</msgSequenceID>                  <!-- [M] card 1     Numeric(15) Monotonic per (dataType, srcApplication, srcInstitution) -->
+    <msgDateTime>2026-07-07T22:05:41+08:00</msgDateTime>  <!-- [M] card 1     DateTime    Built during the nightly batch -->
+  </controlHeader>
+
+  <patient>                                             <!-- [M] card 1     Grouping    Continuity patient -->
+    <identification>
+      <id>S5512345A</id>                                <!-- [M] card 0..1  String(40)  NRIC -->
+      <MRNNumber>MDX-GCMS^13007891</MRNNumber>          <!-- [M] card 1     String(60) -->
+      <type>SP</type>                                   <!-- [M] card 0..1  String(128) NHDD: Singapore Pink IC -->
+    </identification>
+    <name>
+      <value>TAN AH BENG</value>
+      <title>MR</title>
+    </name>
+    <dateOfBirth>1955-03-15</dateOfBirth>
+    <gender>M</gender>
+    <race>CHN</race>
+  </patient>
+
+  <problemList>                                         <!-- [M] card 0..1  Grouping -->
+
+    <!-- Per-visit identifier: NEW list every visit; same value reused only for
+         amendment/cancellation of THIS visit's list.
+         [GCMS] Appointment_ID + "-VD" suffix.                                -->
+    <recordIdentifier>7f3a9c21-88e4-4b1d-9a6e-3c5d10f2b4a8-VD</recordIdentifier>  <!-- [M] -->
+
+    <!-- MUST equal the putEvent id for this visit.
+         [GCMS] Tbl_PatientAppointment.Appointment_ID                          -->
+    <eventId>7f3a9c21-88e4-4b1d-9a6e-3c5d10f2b4a8</eventId>  <!-- [M] card 0..1  String(1995) -->
+
+    <userInstitution>9403258</userInstitution>          <!-- [M] card 0..1  String(50)  HCI where list created -->
+
+    <!-- THE SWITCH: literal, case-sensitive value selects the VD flavour.    -->
+    <listType>Visit Diagnosis List</listType>           <!-- [M] card 1     String(256) FIXED VALUE -->
+
+    <listStatus>                                        <!-- [M] card 1     Grouping -->
+      <code>Final</code>                                <!-- [M] card 0..1  String(50)  Problem_List_Status_(NEHR) -->
+      <codingSchemeName>Problem_List_Status_(NEHR)</codingSchemeName>
+      <textDescription>Final</textDescription>
+    </listStatus>
+
+    <!-- reasonForCancellation [O] omitted — only for cancelled lists          -->
+    <!-- remarks               [O] omitted                                     -->
+    <!-- context               [O] omitted — Problem_List_Context values are
+         admission-flavoured; confirm outpatient value with SPOC if wanted.   -->
+
+    <lastUpdatedBy>                                     <!-- [M] card 0..1  Grouping -->
+      <id>04173D</id>                                   <!-- [M] card 0..1  String      MCR, Dr Ruth Kam -->
+      <name>DR RUTH KAM</name>                          <!-- [M] card 0..1  String(80) -->
+    </lastUpdatedBy>
+
+    <!-- Must be >= latest problem.updatedDateTime below                        -->
+    <lastUpdatedDateTime>2026-07-07T17:10:00</lastUpdatedDateTime>  <!-- [M] card 0..1  DateTime -->
+
+    <!-- ==================================================================
+         DIAGNOSIS 1 — Paroxysmal atrial fibrillation (chronic, active)
+         ================================================================== -->
+    <problem>                                           <!-- [M] card 0..*  Grouping    all of this visit's diagnoses in ONE payload -->
+      <id>TPD-000198231</id>                            <!-- [M] card 0..1  String(50)  [GCMS] Tbl_Patient_Diagnosis PK; immutable across amendments -->
+      <sequenceNo>1</sequenceNo>                        <!-- [M] card 0..1  String      source UI display order, incremental -->
+      <category>                                        <!-- [M] card 0..1  Grouping    fixed for VD -->
+        <code>2</code>                                  <!-- [M] card 0..1  String(50)  Expected value "2" -->
+        <codingSchemeName>Problem_Category_(NEHR)</codingSchemeName>
+        <textDescription>Diagnosis</textDescription>    <!-- Expected value "Diagnosis" -->
+      </category>
+      <problemName>                                     <!-- [M] card 0..1  Grouping    SNOMED CT mandatory -->
+        <code>282825002</code>                          <!-- [M] card 0..1  String(50)  Paroxysmal atrial fibrillation [VERIFY vs SG Ext] -->
+        <codingSchemeName>SNOMED-CT</codingSchemeName>  <!-- [M] card 0..1  String(50) -->
+        <codingSchemeVersion>Jul2024</codingSchemeVersion>  <!-- [M] card 0..1  String(50)  SNOMED release agreed w/ standards team [VERIFY] -->
+        <textDescription>Paroxysmal atrial fibrillation</textDescription>  <!-- [M]  verbatim source description -->
+      </problemName>
+      <!-- severity [O] omitted — not captured in GCMS                         -->
+      <conditionType>                                   <!-- [O] card 0..1  Grouping -->
+        <code>Chronic</code>                            <!-- Condition_Type_(NEHR) -->
+        <codingSchemeName>Condition_Type_(NEHR)</codingSchemeName>
+        <textDescription>Chronic</textDescription>
+      </conditionType>
+      <status>                                          <!-- [M] card 0..1  Grouping -->
+        <code>Active</code>                             <!-- Diagnosis_Status_(NEHR) -->
+        <codingSchemeName>Diagnosis_Status_(NEHR)</codingSchemeName>
+        <textDescription>Active</textDescription>
+      </status>
+      <state>                                           <!-- [O] card 0..1  Grouping    Provisional | Final -->
+        <code>Final</code>                              <!-- Diagnosis_State_(NEHR) -->
+        <codingSchemeName>Diagnosis_State_(NEHR)</codingSchemeName>
+        <textDescription>Final</textDescription>
+      </state>
+      <onsetDate>01-Mar-2019</onsetDate>                <!-- [O] card 0..1  String(50)  NOTE format DD-MMM-YYYY (string, not xs:date) -->
+      <!-- onsetAge/occurenceDate/abatement*/clinicalStageGrade [O] omitted    -->
+      <serviceSpecialty>                                <!-- [M] card 0..1  Grouping -->
+        <code>NEHR_SS_0002</code>                       <!-- Cardiology — verified vs INT_2_1 inventory 2026-07-08 -->
+        <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
+        <textDescription>Cardiology</textDescription>
+      </serviceSpecialty>
+      <notes>Breakthrough palpitations on bisoprolol; Holter 2026-06-20 AF burden 18%. Referred NHCS EP.</notes>  <!-- [O] CLOB -->
+      <institution>9403258</institution>                <!-- [M-ish] String(50)  HCI where diagnosis reported -->
+      <sourceOfOrigin>MDX-GCMS</sourceOfOrigin>         <!-- [M] card 0..1  String(50)  system that created the diagnosis -->
+      <createdBy>                                       <!-- [M] card 0..1  Grouping -->
+        <id>04173D</id>
+        <name>DR RUTH KAM</name>
+        <institution>9403258</institution>
+      </createdBy>
+      <createdDateTime>2026-07-07T16:55:00</createdDateTime>  <!-- [M] card 0..1  DateTime -->
+      <updatedBy>                                       <!-- [M] card 0..1  Grouping    = creator when never edited -->
+        <id>04173D</id>
+        <name>DR RUTH KAM</name>
+        <institution>9403258</institution>
+      </updatedBy>
+      <updatedDateTime>2026-07-07T16:55:00</updatedDateTime>  <!-- [M] card 0..1  DateTime  >= createdDateTime -->
+    </problem>
+
+    <!-- ==================================================================
+         DIAGNOSIS 2 — Essential hypertension (chronic, active)
+         ================================================================== -->
+    <problem>
+      <id>TPD-000198232</id>
+      <sequenceNo>2</sequenceNo>
+      <category>
+        <code>2</code>
+        <codingSchemeName>Problem_Category_(NEHR)</codingSchemeName>
+        <textDescription>Diagnosis</textDescription>
+      </category>
+      <problemName>
+        <code>59621000</code>                           <!-- Essential hypertension [VERIFY vs SG Ext] -->
+        <codingSchemeName>SNOMED-CT</codingSchemeName>
+        <codingSchemeVersion>Jul2024</codingSchemeVersion>
+        <textDescription>Essential hypertension</textDescription>
+      </problemName>
+      <conditionType>
+        <code>Chronic</code>
+        <codingSchemeName>Condition_Type_(NEHR)</codingSchemeName>
+        <textDescription>Chronic</textDescription>
+      </conditionType>
+      <status>
+        <code>Active</code>
+        <codingSchemeName>Diagnosis_Status_(NEHR)</codingSchemeName>
+        <textDescription>Active</textDescription>
+      </status>
+      <state>
+        <code>Final</code>
+        <codingSchemeName>Diagnosis_State_(NEHR)</codingSchemeName>
+        <textDescription>Final</textDescription>
+      </state>
+      <onsetDate>01-Jun-2015</onsetDate>
+      <serviceSpecialty>
+        <code>NEHR_SS_0002</code>
+        <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
+        <textDescription>Cardiology</textDescription>
+      </serviceSpecialty>
+      <notes>BP 138/84 today on amlodipine 5mg OM; continue current therapy.</notes>
+      <institution>9403258</institution>
+      <sourceOfOrigin>MDX-GCMS</sourceOfOrigin>
+      <createdBy>
+        <id>04173D</id>
+        <name>DR RUTH KAM</name>
+        <institution>9403258</institution>
+      </createdBy>
+      <createdDateTime>2026-07-07T16:58:00</createdDateTime>
+      <updatedBy>
+        <id>04173D</id>
+        <name>DR RUTH KAM</name>
+        <institution>9403258</institution>
+      </updatedBy>
+      <updatedDateTime>2026-07-07T16:58:00</updatedDateTime>
+    </problem>
+
+  </problemList>
+</putPatientProblemList>
