@@ -1,144 +1,222 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 ================================================================================
-  putAllergyADR — Sample XML for CMIS drug-allergy contribution
-  Project:    NEHR Onboarding — Heart Clinic / MDXcess GCMS
-  Spec ref:   putAllergyADR_v0.2_20251224.xlsx (Synapxe), Request tab
-  Generated:  2026-06-09
+  putAllergyADR — ALL-FIELDS-FILLED reference message
+  Project:   NEHR Onboarding — Heart Clinic / MDXcess GCMS
+  Spec ref:  putAllergyADR_v0.2_20251224.xlsx (Synapxe), Request tab (rows 3-306)
+  Generated: 2026-06-09
 
-  SCENARIO
+  PURPOSE
   =================
-  Mr TAN AH BENG (70 y/o male, NRIC S5512345A) — the same cardiology patient
-  used in the medication samples (AF + HTN). During allergy reconciliation at
-  his 2026-05-12 visit with Dr Ruth Kam (MCR 04173D), a long-standing ASPIRIN
-  allergy is documented: he developed widespread urticaria (hives) on a prior
-  aspirin exposure in 2015. Clinically important here — aspirin is core
-  antiplatelet therapy, so the alert must flag "avoid same drug AND same class".
+  An exhaustive field catalogue: EVERY element in the spec tree is populated —
+  Mandatory, Optional and Conditional — so the developer can see the exact tag
+  name, nesting, ordering and a realistic value for each. This is NOT a
+  minimal message; production payloads MUST drop any element with no value
+  (no-empty-tags rule, Readme tab). For the lean version see
+  NEHR_putAllergyADR_Sample_Cardiology.xml.
 
-  This is a DRUG ALLERGY (an immune-mediated allergic reaction), so:
-    verificationStatus.code = "Y"  (CMIS_DRUG_ALLERGY_INDICATOR: Yes, it is an allergy)
-    reportingFlag.code       = "A"  (new report)
-    drugType                 = "S"  (suspected/causative drug)
-    drugProbability.code     = "1"  (Definite)
+  To also exercise the conditional fields, this record is modelled as an
+  UPDATE (reportingFlag = "U"), which makes reasonForChange + updatedDate
+  mandatory, and it carries two drugInformation entries (one Suspected,
+  one Concomitant) to demonstrate drugType "S"/"C" and the 1..* cardinality.
 
-  ANNOTATION FORMAT
+  ANNOTATION
   =================
-  Each element comment carries three pieces:
-    [M | O | C]            Significance:  M = Mandatory
-                                          O = Optional
-                                          C = Conditional Mandatory
-    Cardinality            e.g. "1", "0..1", "0..*"
-    Data type / length     e.g. "String(50)", "DateTime", "Grouping"
-  Plus inline justification for the populated value.
+    [M|O|C] = Mandatory / Optional / Conditional-mandatory
+    then cardinality and data type / length, then a justification.
+    "[M-if-parent]" = mandatory only because its optional parent is present.
 
-  NO-EMPTY-TAGS RULE
-  =================
-  Per Synapxe Guide v0.42 / Readme tab: omit empty elements entirely. Do NOT
-  emit <tag/>, </tag> or <tag>NA</tag> for unmapped fields. Optional fields not
-  in use are shown as commented-out reminders for the developer.
-
-  CODESET NOTES (all REAL values from CodeSetInventory v2.29, 24 Dec 2025)
-  =================
-    reportingFlag        CMIS_REPORTING_FLAG_(NEHR)          A  = Add a new report
-    verificationStatus   CMIS_DRUG_ALLERGY_INDICATOR_(NEHR)  Y  = Yes (allergy)
-    informationSource    CMIS_INFORMATION_SOURCE_(NEHR)      01 = Reporter observation
-    profession           CMIS_REPORTER_PROFESSION_(NEHR)     2  = Doctor
-    ADRAlertIndicator    CMIS_ADR_ALERT_INDICATOR_(NEHR)     1  = Avoid same drug + same class
-    severity (serious?)  CMIS_REACTION_SEVERITY_(NEHR)       N  = No (not life-threatening)
-    ADROutcome           CMIS_ADR_OUTCOME_(NEHR)             1  = Recovered
-    substance (allergen) CMIS_DRUG_(NEHR)                    A01060 = Aspirin
-    productName (brand)  CMIS_BRAND_(NEHR)                   B00379 = Aspirin - Beacons
-    exposureRoute        CMIS_ADMINISTRATION_ROUTE_(NEHR)    038 = Oral
-    drugProbability      CMIS_DRUG_PROBABILITY_(NEHR)        1  = Definite
-  IMPORTANT: CMIS code-sets carry Start_Date / End_Date. Validate the codes
-  above are live (see "Expired Codes" tab of the spec) before SIT submission.
+  CODESETS = real values from CodeSetInventory v2.29 where a CMIS code-set is
+  named in the spec. Where the spec names no code-set (type, clinicalStatus,
+  category, criticality, code, manifestation*), the coding triple is shown with
+  a representative system — CONFIRM the code-set name with the SPOC before SIT.
+  All CMIS codes carry Start/End dates — re-check against the "Expired Codes" tab.
 ================================================================================
 -->
 
 <putAllergyADR xmlns="http://www.synapxe.sg/nehr/putAllergyADR">  <!-- [M] card 1  Grouping (root) -->
 
   <controlHeader>                                       <!-- [M] card 1     Grouping -->
-    <srcInstitution>9403258</srcInstitution>            <!-- [M] card 1     String      HCI code, Heart Clinic main branch -->
-    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>  <!-- [M] card 0..1  String(50)  HSCA Licensee (Item 5, Config Checklist) -->
-    <srcApplication>MDX-GCMS</srcApplication>           <!-- [M] card 1     String      Locked value identifying the GCMS software -->
-    <msgID>MDX-GCMS-ADR-20260512-00001</msgID>          <!-- [M] card 1     String(50)  Unique GCMS-generated message ID -->
-    <msgSequenceID>312</msgSequenceID>                  <!-- [M] card 1     String(15)  Monotonic across all messages from this source -->
-    <msgDateTime>2026-05-12T15:48:30+08:00</msgDateTime>  <!-- [M] card 1     DateTime    Message-construction time; +08:00 SG -->
+    <srcInstitution>9403258</srcInstitution>            <!-- [M] card 1     String      HCI code -->
+    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>  <!-- [M] card 0..1  String(50)  HSCA Licensee -->
+    <srcApplication>MDX-GCMS</srcApplication>           <!-- [M] card 1     String      <=12 chars, uppercase, no space -->
+    <msgID>MDX-GCMS-ADR-20260609-00042</msgID>          <!-- [M] card 1     String(50) -->
+    <msgSequenceID>4087</msgSequenceID>                 <!-- [M] card 1     String(15)  Monotonic source sequence -->
+    <msgDateTime>2026-06-09T09:15:00+08:00</msgDateTime>  <!-- [M] card 1     DateTime -->
   </controlHeader>
 
   <patient>                                             <!-- [M] card 1     Grouping -->
     <identification>                                    <!-- [M] card 1     Grouping -->
-      <id>S5512345A</id>                                <!-- [M] card 1     String(20)  NRIC; for ADR must be NRIC/FIN -->
-      <MRNNumber>MDX-GCMS^13007891</MRNNumber>          <!-- [M] card 1     String(60)  GCMS internal MRN, prefixed with srcApplication -->
-      <type>SP</type>                                   <!-- [M] card 0..1  String(128) NHDD ID type: SP = Singapore Pink (Citizen) -->
+      <id>S5512345A</id>                                <!-- [M] card 1     String(20)  NRIC/FIN for ADR -->
+      <MRNNumber>MDX-GCMS^13007891</MRNNumber>          <!-- [M] card 1     String(60) -->
+      <type>SP</type>                                   <!-- [M] card 0..1  String(128) NHDD ID type -->
     </identification>
     <name>                                              <!-- [M] card 1     Grouping -->
-      <value>TAN AH BENG</value>                        <!-- [M] card 1     String(66)  Patient legal name from Tbl_PatientParticular -->
+      <value>TAN AH BENG</value>                        <!-- [M] card 1     String(66) -->
       <title>MR</title>                                 <!-- [O] card 0..1  String(10) -->
     </name>
-    <dateOfBirth>1955-03-15</dateOfBirth>               <!-- [M] card 0..1  Date        70 y/o -->
-    <gender>M</gender>                                  <!-- [M] card 0..1  String(128) NHDD: M = Male -->
-    <race>CHN</race>                                    <!-- [M] card 0..1  String(128) NHDD: CHN = Chinese -->
-    <!-- nationality        [O] 0..1  omitted — same as race for SG citizen -->
-    <!-- maritalStatus      [O] 0..1  omitted — not captured -->
+    <aliasName>                                         <!-- [O] card 0..1  Grouping -->
+      <value>CHEN AMING</value>                         <!-- [O] card 0..1  String(128) -->
+      <title>MR</title>                                 <!-- [O] card 0..1  String(10) -->
+    </aliasName>
+    <contactDetails>                                    <!-- [O] card 0..1  Grouping -->
+      <address>                                         <!-- [O] card 0..*  Grouping -->
+        <type>MAIN</type>                               <!-- [M-if-parent] card 0..1  String(5)   MAIN | OTHER -->
+        <streetLine1>BLK 412 #08-219</streetLine1>      <!-- [O] card 0..1  String(75) -->
+        <streetLine2>ANG MO KIO AVENUE 10</streetLine2> <!-- [O] card 0..1  String(75) -->
+        <streetLine3>NEAR AMK HUB</streetLine3>         <!-- [O] card 0..1  String(75) -->
+        <streetLine4>BLOCK ENTRANCE B</streetLine4>     <!-- [O] card 0..1  String(75) -->
+        <city>SINGAPORE</city>                          <!-- [O] card 0..1  String(50) -->
+        <country>SG</country>                           <!-- [O] card 0..1  String(50) -->
+        <postalCode>560412</postalCode>                 <!-- [O] card 0..1  String(10) -->
+      </address>
+      <phone>                                           <!-- [O] card 0..*  Grouping -->
+        <type>MOBILE</type>                             <!-- [M-if-parent] card 0..1  String(8)   HOME | MOBILE | WORK -->
+        <countryCode>65</countryCode>                   <!-- [O] card 0..1  String(50) -->
+        <areaCode>0</areaCode>                          <!-- [O] card 0..1  String(50) -->
+        <phoneNumber>91234567</phoneNumber>             <!-- [M-if-parent] card 0..1  String(40) -->
+        <extensionNumber>0</extensionNumber>            <!-- [O] card 0..1  String(50) -->
+      </phone>
+    </contactDetails>
+    <dateOfBirth>1955-03-15</dateOfBirth>               <!-- [M] card 0..1  Date -->
+    <countryOfBirth>SG</countryOfBirth>                 <!-- [O] card 0..1  String(50) -->
+    <gender>M</gender>                                  <!-- [M] card 0..1  String(128) NHDD: M=Male -->
+    <emailAddress>tan.ahbeng@example.sg</emailAddress>  <!-- [O] card 0..1  String(128) -->
+    <nationality>SG</nationality>                       <!-- [O] card 0..1  String(128) -->
+    <race>CHN</race>                                    <!-- [M] card 0..1  String(128) NHDD: CHN=Chinese -->
+    <residencyStatus>C</residencyStatus>                <!-- [O] card 0..1  String(128)  C=Citizen -->
+    <language>EN</language>                             <!-- [O] card 0..1  String(128) -->
+    <maritalStatus>M</maritalStatus>                    <!-- [O] card 0..1  String(128)  M=Married -->
+    <occupation>RETIRED</occupation>                    <!-- [O] card 0..1  String(128) -->
+    <VIPFlag>N</VIPFlag>                                <!-- [O] card 0..1  String(1) -->
+    <VVIPFlag>N</VVIPFlag>                              <!-- [O] card 0..1  String(1) -->
+    <dateOfDeath>0000-00-00</dateOfDeath>               <!-- [O] card 0..1  Date        shown for completeness; OMIT for living patient -->
+    <deathIndicator>N</deathIndicator>                  <!-- [O] card 0..1  String(1) -->
+    <religion>BUDDHIST</religion>                       <!-- [O] card 0..1  String(128) -->
+    <nextOfKin>                                         <!-- [O] card 0..*  Grouping -->
+      <name>TAN MEI LING</name>                         <!-- [O] card 0..1  String(140) -->
+      <phone>98887777</phone>                           <!-- [O] card 0..1  String(80) -->
+      <relationship>DAUGHTER</relationship>             <!-- [O] card 0..1  String(30) -->
+      <email>meiling.tan@example.sg</email>             <!-- [O] card 0..1  String(100) -->
+    </nextOfKin>
   </patient>
 
-  <allergyIntolerance>                                  <!-- [M] card 0..*  Grouping (one allergy record) -->
+  <allergyIntolerance>                                  <!-- [M] card 0..*  Grouping -->
 
-    <identifier>MDX-GCMS-ADR-13007891-001</identifier>  <!-- [M] card 1     String(80)  Stable per-record ID; must persist across amendments -->
+    <identifier>MDX-GCMS-ADR-13007891-001</identifier>  <!-- [M] card 1     String(80) -->
 
     <reportingFlag>                                     <!-- [M] card 1     Grouping -->
       <coding>                                          <!-- [M] card 1     Grouping -->
         <system>CMIS_REPORTING_FLAG_(NEHR)</system>     <!-- [M] card 0..1  String(50) -->
-        <code>A</code>                                  <!-- [M] card 1     String(1)   A = Add a new report -->
-        <display>Add a new report</display>             <!-- [M] card 0..1  String(500) -->
+        <version>2022-10-27</version>                   <!-- [O] card 0..1  String(50)  populate only if versioned code-set used -->
+        <code>U</code>                                  <!-- [M] card 1     String(1)   U = Update a report -->
+        <display>Update a report</display>              <!-- [M] card 0..1  String(500) -->
       </coding>
-      <text>Add a new report</text>                     <!-- [M] card 0..1  String(500) -->
+      <text>Update a report</text>                      <!-- [M] card 0..1  String(500) -->
     </reportingFlag>
 
     <creator>                                           <!-- [M] card 1     Grouping -->
       <practitioner>                                    <!-- [M] card 1     Grouping -->
-        <identifier>04173D</identifier>                 <!-- [M] card 0..1  String(50)  MCR of recording clinician -->
+        <identifier>04173D</identifier>                 <!-- [M] card 0..1  String(50) -->
         <name>RUTH KAM</name>                           <!-- [M] card 1     String(50) -->
       </practitioner>
       <system>                                          <!-- [O] card 0..1  Grouping -->
-        <name>MDX-GCMS</name>                           <!-- [M] card 0..1  String(50)  System that created the report -->
+        <name>MDX-GCMS</name>                           <!-- [M] card 0..1  String(50) -->
       </system>
     </creator>
 
-    <verificationStatus>                                <!-- [M] card 1     Grouping  (is this an allergy?) -->
+    <type>                                               <!-- [O] card 0..1  Grouping  (NEHR currently accepts drug-related only) -->
+      <coding>                                          <!-- [O] card 0..1  Grouping -->
+        <system>CMIS_ALLERGY_TYPE_(NEHR)</system>       <!-- [O] card 0..1  String(50)  code-set name TBC with SPOC -->
+        <code>DA</code>                                 <!-- [O] card 0..1  String(50) -->
+        <display>Drug Allergy</display>                 <!-- [O] card 0..1  String(500) -->
+      </coding>
+      <text>Drug Allergy</text>                         <!-- [M-if-parent] card 0..1  String(500) -->
+    </type>
+
+    <clinicalStatus>                                     <!-- [O] card 0..1  Grouping -->
+      <coding>                                          <!-- [O] card 0..1  Grouping -->
+        <system>CMIS_CLINICAL_STATUS_(NEHR)</system>    <!-- [O] card 0..1  String(50)  code-set name TBC -->
+        <code>active</code>                             <!-- [O] card 0..1  String(50) -->
+        <display>Active</display>                       <!-- [O] card 0..1  String(CLOB) -->
+      </coding>
+      <text>Active</text>                               <!-- [M-if-parent] card 0..1  String(CLOB) -->
+    </clinicalStatus>
+
+    <verificationStatus>                                <!-- [M] card 1     Grouping -->
       <coding>                                          <!-- [M] card 1     Grouping -->
         <system>CMIS_DRUG_ALLERGY_INDICATOR_(NEHR)</system>  <!-- [M] card 0..1  String(50) -->
-        <code>Y</code>                                  <!-- [M] card 1     String(10)  Y = Yes, it is a drug allergy -->
+        <version>2022-10-27</version>                   <!-- [O] card 0..1  String(50) -->
+        <code>Y</code>                                  <!-- [M] card 1     String(10)  Y=Yes(allergy) N=No(ADR) U=Uncertain -->
         <display>Yes</display>                          <!-- [M] card 1     String(250) -->
       </coding>
-      <text>Drug allergy</text>                         <!-- [M] card 0..1  String(250) -->
+      <text>Confirmed drug allergy</text>               <!-- [M] card 0..1  String(250) -->
     </verificationStatus>
 
-    <adverseReaction>Generalised urticaria (hives) following aspirin ingestion</adverseReaction>
-                                                        <!-- [M] card 1     String(500) Transactional free-text description -->
+    <category>                                           <!-- [O] card 0..*  Grouping -->
+      <coding>                                          <!-- [O] card 0..1  Grouping -->
+        <system>CMIS_ALLERGY_CATEGORY_(NEHR)</system>   <!-- [O] card 0..1  String(50)  code-set name TBC -->
+        <code>medication</code>                         <!-- [O] card 0..1  String(50) -->
+        <display>Medication</display>                   <!-- [O] card 0..1  String(CLOB) -->
+      </coding>
+      <text>Medication</text>                           <!-- [M-if-parent] card 0..1  String(CLOB) -->
+    </category>
+
+    <criticality>                                        <!-- [O] card 0..*  Grouping -->
+      <coding>                                          <!-- [O] card 0..1  Grouping -->
+        <system>CMIS_CRITICALITY_(NEHR)</system>        <!-- [O] card 0..1  String(50)  code-set name TBC -->
+        <code>high</code>                               <!-- [O] card 0..1  String(10) -->
+        <display>High</display>                         <!-- [O] card 0..1  String(250) -->
+      </coding>
+      <text>High</text>                                 <!-- [M-if-parent] card 0..1  String(250) -->
+    </criticality>
+
+    <code>                                               <!-- [O] card 0..1  Grouping  (spec note: allergen is normally under drugInformation>substance) -->
+      <coding>                                          <!-- [O] card 0..1  Grouping -->
+        <system>CMIS_DRUG_(NEHR)</system>               <!-- [O] card 0..1  String(50) -->
+        <code>A01060</code>                             <!-- [O] card 0..1  String(10)  A01060=Aspirin -->
+        <display>Aspirin</display>                      <!-- [O] card 0..1  String(CLOB) -->
+      </coding>
+      <text>Aspirin</text>                              <!-- [M-if-parent] card 0..1  String(CLOB) -->
+    </code>
+
+    <adverseReaction>Generalised urticaria and facial angioedema following aspirin ingestion</adverseReaction>
+                                                        <!-- [M] card 1     String(500) -->
 
     <encounter>                                         <!-- [M] card 1     Grouping -->
+      <identifier>MDX-GCMS-EVT-20260512-001</identifier>  <!-- [O] card 0..1  String(80)  link to the putEvent encounter -->
+      <period>                                          <!-- [O] card 0..1  Grouping -->
+        <start>2026-05-12T15:00:00+08:00</start>        <!-- [O] card 0..1  DateTime -->
+        <end>2026-05-12T15:50:00+08:00</end>            <!-- [O] card 0..1  DateTime -->
+      </period>
       <serviceProvider>                                 <!-- [M] card 1     Grouping -->
-        <identifier>9403258</identifier>                <!-- [M] card 1     String(50)  HCI code of reporting establishment -->
+        <identifier>9403258</identifier>                <!-- [M] card 1     String(50)  HCI code or licensee number -->
         <name>Ruth Kam Heart and Arrhythmia Clinic</name>  <!-- [M] card 1     String(250) -->
       </serviceProvider>
     </encounter>
 
     <onset>                                              <!-- [M] card 1     Grouping -->
-      <onsetDateTime>20150620</onsetDateTime>           <!-- [M] card 1     String(8)   YYYYMMDD; "00000000" if unknown -->
+      <onsetDateTime>20150620</onsetDateTime>           <!-- [M] card 1     String(8)   YYYYMMDD / 00000000 if unknown -->
+      <onsetAge>60</onsetAge>                            <!-- [O] card 0..1  String(3)   age at onset -->
+      <onsetPeriod>                                     <!-- [O] card 0..1  Grouping -->
+        <startDateTime>2015-06-20T00:00:00+08:00</startDateTime>  <!-- [O] card 0..1  DateTime -->
+        <endDateTime>2015-06-22T00:00:00+08:00</endDateTime>      <!-- [O] card 0..1  DateTime -->
+      </onsetPeriod>
+      <onsetString>Approximately 11 years ago, after OTC aspirin</onsetString>  <!-- [O] card 0..1  String(CLOB) -->
     </onset>
 
     <recorder>                                          <!-- [M] card 1     Grouping -->
       <practitioner>                                    <!-- [M] card 1     Grouping -->
-        <identifier>04173D</identifier>                 <!-- [M] card 1     String(9)   MCR — mandatory because profession = Doctor -->
+        <identifier>04173D</identifier>                 <!-- [M] card 1     String(9)   MCR mandatory when profession = Doctor/Dentist -->
         <name>RUTH KAM</name>                           <!-- [M] card 1     String(66) -->
         <reporterContactNumber>66889988</reporterContactNumber>  <!-- [O] card 0..1  String(20) -->
+        <reporterEmail>ruthkam@heartclinic.sg</reporterEmail>    <!-- [O] card 0..1  String(66) -->
         <profession>                                    <!-- [M] card 1     Grouping -->
           <code>                                        <!-- [M] card 1     Grouping -->
             <coding>                                    <!-- [M] card 1     Grouping -->
               <system>CMIS_REPORTER_PROFESSION_(NEHR)</system>  <!-- [M] card 0..1  String(50) -->
-              <code>2</code>                            <!-- [M] card 1     String(10)  2 = Doctor -->
+              <version>2022-10-27</version>             <!-- [O] card 0..1  String(50) -->
+              <code>2</code>                            <!-- [M] card 1     String(10)  2=Doctor -->
               <display>Doctor</display>                 <!-- [M] card 1     String(250) -->
             </coding>
             <text>Doctor</text>                         <!-- [M] card 0..1  String(250) -->
@@ -147,91 +225,158 @@
       </practitioner>
     </recorder>
 
-    <reportedDate>2026-05-12T15:48:00</reportedDate>    <!-- [M] card 1     DateTime    [-]CCYY-MM-DDThh:mm:ss; updated on each add/update/deactivate -->
+    <reportedDate>2026-06-09T09:14:00</reportedDate>    <!-- [M] card 1     DateTime  [-]CCYY-MM-DDThh:mm:ss -->
+
+    <asserter>                                          <!-- [O] card 0..1  Grouping  (who clinically asserted the allergy) -->
+      <practitioner>                                    <!-- [O] card 0..*  Grouping -->
+        <identifier>04173D</identifier>                 <!-- [M-if-parent] card 0..1  String -->
+        <name>RUTH KAM</name>                           <!-- [M-if-parent] card 0..1  String(80) -->
+      </practitioner>
+    </asserter>
+    <assertedDate>2026-05-12T15:48:00+08:00</assertedDate>  <!-- [O] card 0..1  DateTime -->
+
+    <author>                                            <!-- [O] card 0..1  Grouping  (who entered the record) -->
+      <practitioner>                                    <!-- [O] card 0..1  Grouping -->
+        <identifier>NUR0098</identifier>                <!-- [M-if-parent] card 0..1  String(50) -->
+        <name>LIM HUI ZHEN</name>                       <!-- [M-if-parent] card 0..1  String(50) -->
+      </practitioner>
+      <system>                                          <!-- [O] card 0..1  Grouping -->
+        <name>MDX-GCMS</name>                           <!-- [M-if-parent] card 0..1  String(500) -->
+      </system>
+    </author>
+
+    <updatedDate>2026-06-09T09:14:00+08:00</updatedDate>  <!-- [O] card 0..1  DateTime -->
+    <reasonForChange>Added facial angioedema to the documented reaction</reasonForChange>
+                                                        <!-- [C] card 0..1  String(1000)  MANDATORY when reportingFlag = U or D -->
+    <lastOccurrence>2015-06-20T00:00:00+08:00</lastOccurrence>  <!-- [O] card 0..1  DateTime -->
+    <note>Patient counselled to avoid all NSAIDs; medic-alert card issued.</note>  <!-- [O] card 0..1  String(1000) -->
 
     <informationSource>                                 <!-- [M] card 1     Grouping -->
       <coding>                                          <!-- [M] card 1     Grouping -->
         <system>CMIS_INFORMATION_SOURCE_(NEHR)</system> <!-- [M] card 0..1  String(50) -->
-        <code>01</code>                                 <!-- [M] card 1     String(10)  01 = Reporter observation (note leading 0) -->
-        <display>Reporter observation</display>         <!-- [M] card 1     String(250) -->
+        <version>2022-10-27</version>                   <!-- [O] card 0..1  String(50) -->
+        <code>02</code>                                 <!-- [M] card 1     String(10)  02=Medical records (leading 0) -->
+        <display>Medical records</display>              <!-- [M] card 1     String(250) -->
       </coding>
-      <text>Reporter observation</text>                 <!-- [M] card 0..1  String(250) -->
+      <text>Medical records</text>                      <!-- [M] card 0..1  String(250) -->
     </informationSource>
 
     <reaction>                                          <!-- [M] card 1     Grouping -->
       <ADRAlertIndicatorCode>                           <!-- [O] card 0..1  Grouping -->
         <coding>                                        <!-- [M-if-parent] card 0..1  Grouping -->
           <system>CMIS_ADR_ALERT_INDICATOR_(NEHR)</system>  <!-- [M] card 0..1  String(50) -->
-          <code>1</code>                                <!-- [M] card 0..1  String(10)  1 = avoid same drug + same class -->
+          <code>1</code>                                <!-- [M] card 0..1  String(10)  1=avoid same drug+class -->
           <display>Yes, avoid the same drug and drugs in the same class</display>  <!-- [M] card 0..1  String(250) -->
         </coding>
         <text>Avoid aspirin and all NSAIDs/salicylates</text>  <!-- [M] card 0..1  String(250) -->
       </ADRAlertIndicatorCode>
-
-      <manifestation>                                   <!-- [O] card 0..*  Grouping  (clinical sign) -->
-        <text>Urticaria</text>                          <!-- [M] card 0..1  String(CLOB)  Free-text manifestation -->
+      <manifestation>                                   <!-- [O] card 0..*  Grouping -->
+        <coding>                                        <!-- [O] card 0..1  Grouping -->
+          <system>CMIS_ADVERSE_REACTION_(NEHR)</system> <!-- [M-if-parent] card 0..1  String(50)  code-set name TBC -->
+          <code>46</code>                               <!-- [O] card 0..1  String(50)  46=Urticaria -->
+          <display>Urticaria</display>                  <!-- [O] card 0..1  String(CLOB) -->
+        </coding>
+        <text>Urticaria</text>                          <!-- [M-if-parent] card 0..1  String(CLOB) -->
       </manifestation>
-
-      <severity>                                        <!-- [O] card 0..1  Grouping  (life-threatening?) -->
+      <manifestation>                                   <!-- [O] card 0..*  Grouping (second sign) -->
+        <coding>
+          <system>CMIS_ADVERSE_REACTION_(NEHR)</system>
+          <code>5</code>                                <!-- 5=Angioedema -->
+          <display>Angioedema</display>
+        </coding>
+        <text>Facial angioedema</text>
+      </manifestation>
+      <description>Widespread hives within 30 minutes, followed by lip and periorbital swelling.</description>
+                                                        <!-- [O] card 0..1  String(CLOB) -->
+      <onset>2015-06-20T11:00:00+08:00</onset>          <!-- [O] card 0..1  DateTime -->
+      <severity>                                        <!-- [O] card 0..1  Grouping -->
         <coding>                                        <!-- [M-if-parent] card 0..1  Grouping -->
           <system>CMIS_REACTION_SEVERITY_(NEHR)</system>  <!-- [M] card 0..1  String(50) -->
-          <code>N</code>                                <!-- [M] card 0..1  String(1)   N = not life-threatening -->
-          <display>No</display>                         <!-- [M] card 0..1  String(CLOB) -->
+          <code>Y</code>                                <!-- [M] card 0..1  String(1)   Y=Yes(life-threatening) -->
+          <display>Yes</display>                        <!-- [M] card 0..1  String(CLOB) -->
         </coding>
-        <text>Not life-threatening</text>               <!-- [M] card 0..1  String(CLOB) -->
+        <text>Severe — airway involvement</text>        <!-- [M] card 0..1  String(CLOB) -->
       </severity>
-
       <ADROutcome>                                      <!-- [O] card 0..1  Grouping -->
         <coding>                                        <!-- [M-if-parent] card 0..1  Grouping -->
           <system>CMIS_ADR_OUTCOME_(NEHR)</system>      <!-- [M] card 0..1  String(50) -->
-          <code>1</code>                                <!-- [M] card 0..1  String(10)  1 = Recovered -->
+          <code>1</code>                                <!-- [M] card 0..1  String(10)  1=Recovered -->
           <display>Recovered</display>                  <!-- [M] card 0..1  String(250) -->
         </coding>
-        <text>Recovered</text>                          <!-- [M] card 0..1  String(250) -->
+        <text>Recovered after antihistamine + steroid</text>  <!-- [M] card 0..1  String(250) -->
       </ADROutcome>
-      <!-- reactionOutcome  [O] 0..*  omitted — reaction did not meet any seriousness criteria -->
+      <note>Patient attended A&amp;E on the original episode.</note>  <!-- [O] card 0..1  String(1000) -->
+      <reactionOutcome>                                 <!-- [O] card 0..*  Grouping (seriousness criterion) -->
+        <coding>                                        <!-- [M] card 1     Grouping -->
+          <system>CMIS_REACTION_OUTCOME_(NEHR)</system> <!-- [M] card 0..1  String(50) -->
+          <code>3</code>                                <!-- [M] card 1     String(10)  3=Required in-patient hospitalisation -->
+          <display>Required in-patient hospitalisation</display>  <!-- [M] card 1     String(250) -->
+        </coding>
+        <text>Required in-patient hospitalisation</text>  <!-- [M] card 0..1  String(250) -->
+      </reactionOutcome>
     </reaction>
 
-    <drugInformation>                                   <!-- [M] card 1..*  Grouping (the causative drug) -->
+    <drugInformation>                                   <!-- [M] card 1..*  Grouping (1: SUSPECTED drug) -->
       <substance>                                       <!-- [M] card 0..1  Grouping -->
         <coding>                                        <!-- [M] card 0..1  Grouping -->
           <system>CMIS_DRUG_(NEHR)</system>             <!-- [M] card 0..1  String(50) -->
-          <code>A01060</code>                           <!-- [M] card 0..1  String(10)  A01060 = Aspirin -->
+          <version>2022-10-27</version>                 <!-- [O] card 0..1  String(50) -->
+          <code>A01060</code>                           <!-- [M] card 0..1  String(10)  A01060=Aspirin -->
           <display>Aspirin</display>                    <!-- [M] card 0..1  String(250) -->
         </coding>
-        <text>Aspirin</text>                            <!-- [M] card 0..1  String(250)  Mandatory if substance.code blank; populated here for clarity -->
+        <text>Aspirin</text>                            <!-- [M] card 0..1  String(250) -->
       </substance>
-
       <exposureRoute>                                   <!-- [O] card 0..1  Grouping -->
         <coding>                                        <!-- [O] card 0..1  Grouping -->
           <system>CMIS_ADMINISTRATION_ROUTE_(NEHR)</system>  <!-- [M] card 0..1  String(50) -->
-          <code>038</code>                              <!-- [M] card 0..1  String(10)  038 = Oral -->
+          <code>038</code>                              <!-- [M] card 0..1  String(10)  038=Oral -->
           <display>Oral</display>                        <!-- [M] card 0..1  String(250) -->
         </coding>
         <text>Oral</text>                               <!-- [M] card 0..1  String(250) -->
       </exposureRoute>
-
-      <drugProbability>                                 <!-- [C] card 0..1  Grouping  (mandatory when drugType = "S") -->
+      <drugStartDate>2015-06-20T00:00:00+08:00</drugStartDate>  <!-- [O] card 0..1  DateTime -->
+      <drugStopDate>2015-06-20T00:00:00+08:00</drugStopDate>    <!-- [O] card 0..1  DateTime -->
+      <drugProbability>                                 <!-- [C] card 0..1  Grouping  (mandatory when drugType="S") -->
         <coding>                                        <!-- [M] card 0..1  Grouping -->
           <system>CMIS_DRUG_PROBABILITY_(NEHR)</system> <!-- [M] card 0..1  String(50) -->
-          <code>1</code>                                <!-- [M] card 0..1  String(10)  1 = Definite -->
+          <code>1</code>                                <!-- [M] card 0..1  String(10)  1=Definite -->
           <display>Definite</display>                   <!-- [M] card 0..1  String(250) -->
         </coding>
         <text>Definite</text>                           <!-- [M] card 0..1  String(250) -->
       </drugProbability>
-
-      <productName>                                     <!-- [O] card 0..1  Grouping  (specific brand exposed to) -->
+      <productName>                                     <!-- [O] card 0..1  Grouping -->
         <coding>                                        <!-- [O] card 0..1  Grouping -->
           <system>CMIS_BRAND_(NEHR)</system>            <!-- [M] card 0..1  String(50) -->
-          <code>B00379</code>                           <!-- [M] card 0..1  String(10)  B00379 = Aspirin - Beacons Pharmaceuticals -->
+          <code>B00379</code>                           <!-- [M] card 0..1  String(10)  B00379=Aspirin - Beacons -->
           <display>ASPIRIN - BEACONS PHARMACEUTICALS</display>  <!-- [M] card 0..1  String(250) -->
         </coding>
         <text>Aspirin (Beacons)</text>                  <!-- [M] card 0..1  String(250) -->
       </productName>
+      <drugType>S</drugType>                            <!-- [M] card 1     String(1)   S=Suspected (only ONE per record) -->
+      <drugDetails>300mg dispersible tablet</drugDetails>  <!-- [O] card 0..1  String(60) -->
+      <drugIndication>Primary prevention of cardiovascular events</drugIndication>  <!-- [O] card 0..1  String(500) -->
+      <drugBatchNo>ASP2015B047</drugBatchNo>            <!-- [O] card 0..1  String(25) -->
+    </drugInformation>
 
-      <drugType>S</drugType>                            <!-- [M] card 1     String(1)   S = Suspected drug (only ONE suspected drug per record) -->
-      <drugIndication>Primary prevention of cardiovascular events</drugIndication>
-                                                        <!-- [O] card 0..1  String(500)  Why the drug had been given -->
+    <drugInformation>                                   <!-- [M] card 1..*  Grouping (2: CONCOMITANT drug) -->
+      <substance>                                       <!-- [M] card 0..1  Grouping -->
+        <coding>
+          <system>CMIS_DRUG_(NEHR)</system>
+          <code>A01110</code>                           <!-- A01110=Atorvastatin -->
+          <display>Atorvastatin</display>
+        </coding>
+        <text>Atorvastatin</text>
+      </substance>
+      <exposureRoute>                                   <!-- [O] card 0..1  Grouping -->
+        <coding>
+          <system>CMIS_ADMINISTRATION_ROUTE_(NEHR)</system>
+          <code>038</code>
+          <display>Oral</display>
+        </coding>
+        <text>Oral</text>
+      </exposureRoute>
+      <drugType>C</drugType>                            <!-- [M] card 1     String(1)   C=Concomitant (drugProbability not required for C) -->
+      <drugIndication>Hyperlipidaemia</drugIndication>  <!-- [O] card 0..1  String(500) -->
     </drugInformation>
 
   </allergyIntolerance>
