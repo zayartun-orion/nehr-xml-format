@@ -1,318 +1,274 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 ================================================================================
-  putEvent — MAXIMAL Reference (every element filled)
+  putEvent — Reference XML showing Significance, Cardinality, and Data Length
   Project:    NEHR Onboarding — Heart Clinic / MDXcess GCMS
   Spec ref:   putEvent_v0.2_20251224.xlsx (Synapxe), Request tab
-  Codesets:   INT_2_1_Onboarding_CodeSetInventory_v2.29 (Synapxe)
-              skills/nehr-data-mapping/references/nhdd-samples/*.json (NHDD)
-  Generated:  2026-05-05  (revision 4 — all-fields-filled reference)
+  Generated:  2026-05-05  (revision 3 — significance corrections from spec)
 
   PURPOSE
   =================
-  A teaching reference, not a transmittable message. Shows every populatable
-  element of putEvent filled with a realistic example value, plus annotations
-  about Significance, Cardinality, Data Type/Length, and a "what to fill" note.
-
-  Use this to learn the shape of each element. For real transmissions, refer to
-  NEHR_putEvent_Sample_Heart_Clinic.xml (single patient, outpatient cardiology).
-
-  DELIBERATE INCONSISTENCY NOTE
-  =================
-  Real putEvent messages are EITHER outpatient (eventType=4) OR inpatient
-  (eventType=1 or 2). This file shows BOTH patterns for reference — the
-  inpatient-only elements (admittingClinician, dischargingClinician,
-  dischargeInformation) are clearly tagged "INPATIENT ONLY" and must NOT be
-  emitted in an outpatient message. For Heart Clinic (outpatient cardiology),
-  omit those entirely.
+  Spec-aligned reference XML. Every element labelled with its Significance,
+  Cardinality, and Data Type / max length per the v0.2 spec.
 
   ANNOTATION FORMAT
   =================
-  <element>VALUE</element>  <! [SIG] card N..N TypeName(MaxLen) | meaning >
+  Each element comment carries three pieces:
+    [M | O | C]                       Significance:
+                                        M = Mandatory
+                                        O = Optional
+                                        C = Conditional Mandatory
+                                            (mandatory only when its condition holds)
+    Cardinality                       e.g. "1", "0..1", "0..*", "1..2"
+    Data type / length                e.g. "String(50)", "DateTime", "Grouping"
 
-    Significance:  M = Mandatory, O = Optional, C = Conditional Mandatory
-    Cardinality:   1 (exactly 1), 0..1 (zero or one), 0..* (zero or many),
-                   1..2 (exactly one or two)
-    Type:          String(N), String(CLOB), Long(N), Date, DateTime,
-                   Boolean(5), Grouping
-    Meaning:       brief description of what the value represents and source
-
-  EXAMPLE PATIENT
+  SIGNIFICANCE PRECEDENCE RULE (from spec README)
   =================
-  Mdm Tan Mei Ling — Singapore citizen, Chinese, female, married, Buddhist,
-  Mandarin-speaking. Came in for a cardiology follow-up with Dr Ruth Kam at
-  Heart Clinic main branch on 4 May 2026.
+  "Significance takes precedence over Cardinality where they conflict.
+   If a Mandatory child field sits within an Optional parent, the child is
+   only Mandatory when the parent is mapped."
+
+  CARDINALITY KEY
+  =================
+    1        Exactly one occurrence
+    0..1     Zero or one
+    0..*     Zero or many (e.g. multiple addresses, phones, NOKs)
+    1..2     Exactly one or two (only used by patient.identification)
+
+  RULE — NO EMPTY TAGS
+  =================
+  Per Synapxe Guide v0.42 (page 10) and putEvent README:
+    Source must EXCLUDE all empty XML tags for unmapped fields and mapped
+    fields with no values populated. Do not emit <tag></tag>, <tag/>, or
+    <tag>NA</tag>. Omit the element entirely.
 ================================================================================
 -->
-
-<putEvent xmlns="http://www.synapxe.sg/nehr/putEvent">  <!-- [M] card 1 Grouping | XML root, one per message -->
-
-
-  <!-- ============================================================ -->
-  <!-- CONTROL HEADER — every message includes this                  -->
-  <!-- ============================================================ -->
-  <controlHeader>                                       <!-- [M] card 1 Grouping | message metadata wrapper -->
-
-    <srcInstitution>9403258</srcInstitution>            <!-- [M] card 1 String(50) | HCI code of the sending clinic. Heart Clinic main = 9403258. -->
-    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>  <!-- [M] card 0..1 String(50) | Full HSCA Licensee number. Format: MOSD/HCI/Service/NNN/YYD. Omit only for Administrative Event update. -->
-    <srcApplication>MDX-GCMS</srcApplication>           <!-- [M] card 1 String(50) | Source software identifier. Hardcoded — uppercase, ≤12 chars per Guide. -->
-    <msgID>MDX-GCMS-EVT-20260504-00001</msgID>          <!-- [M] card 1 String(50) | Unique message identifier per send. Generate UUID or app+timestamp+counter. -->
-    <msgSequenceID>1</msgSequenceID>                    <!-- [M] card 1 Long(15) | Monotonic counter scoped to (interface+srcApplication+srcInstitution). Persisted, never resets. -->
-    <msgDateTime>2026-05-04T18:30:00+08:00</msgDateTime>  <!-- [M] card 1 DateTime | Send time. ISO 8601 with +08:00 timezone (required for A&A validation). -->
-    <msgType>Clinical</msgType>                         <!-- [M] card 1 String(14) | Message mode. Allowed: Clinical | Administrative | Cancel | Merge -->
-
+<putEvent xmlns="http://www.synapxe.sg/nehr/putEvent">
+  <!-- [M]  card 1  Grouping  (root) -->
+  <controlHeader>
+    <!-- [M]  card 1  Grouping -->
+    <srcInstitution>9403258</srcInstitution>
+    <!-- [M]  card 1     String(50)   HCI code -->
+    <licenseeNumber>L/9403258/MDS/007/242</licenseeNumber>
+    <!-- [M]  card 0..1  String(50)   HSCA Licensee (omit for Administrative Event update) -->
+    <srcApplication>MDX-GCMS</srcApplication>
+    <!-- [M]  card 1     String(50)   ≤12 chars per Guide -->
+    <msgID>MDX-GCMS-EVT-20260504-00001</msgID>
+    <!-- [M]  card 1     String(50)   unique per message -->
+    <msgSequenceID>1</msgSequenceID>
+    <!-- [M]  card 1     Long(15)     monotonic per source per interface -->
+    <msgDateTime>2026-05-04T18:30:00+08:00</msgDateTime>
+    <!-- [M]  card 1     DateTime     ISO 8601 with +08:00 timezone -->
+    <msgType>Clinical</msgType>
+    <!-- [M]  card 1     String(14)   Clinical | Administrative | Cancel | Merge -->
   </controlHeader>
-
-
-  <!-- ============================================================ -->
-  <!-- PATIENT — demographics + identification                       -->
-  <!-- ============================================================ -->
-  <patient>                                             <!-- [M] card 1 Grouping | patient demographics wrapper -->
-
-    <identification>                                    <!-- [M] card 1..2 Grouping | 1 or 2 ID blocks per patient (e.g. NRIC + passport) -->
-      <id>S1234567A</id>                                <!-- [M] card 0..1 String(20) | Patient ID document number, uppercase. From Tbl_PatientParticular.Patient_NRIC. -->
-      <MRNNumber>MDX-GCMS^13009999</MRNNumber>          <!-- [M] card 1 String(60) | Source MRN, prefixed with srcApplication^. From Tbl_PatientParticular.Reg_No. -->
-      <type>SP</type>                                   <!-- [M] card 0..1 String(128) | NHDD ID type. SP=Pink IC, SB=Blue IC, SH=Birth Cert, SO=FIN, FP=Foreign Passport, MP=Malaysian Passport, NA=Temp/Unknown. -->
-      <patientMergeType>OBSOLETE</patientMergeType>     <!-- [C] card 0..1 String | Required ONLY when msgType=Merge. Values: OBSOLETE (old ID) or SURVIVOR (new ID). Comment out for Clinical. -->
+  <patient>
+    <!-- [M]  card 1  Grouping -->
+    <identification>
+      <!-- [M]  card 1..2  Grouping  (1 or 2 ID blocks per patient) -->
+      <id>S8743573C</id>
+      <!-- [M]  card 0..1  String(20) -->
+      <MRNNumber>MDX-GCMS^13005116</MRNNumber>
+      <!-- [M]  card 1     String(60) -->
+      <type>SP</type>
+      <!-- [M]  card 0..1  String(128)  NHDD: SP, SB, SH, SO, FP, MP, NA -->
+      <!-- patientMergeType                                 [C]  card 0..1  String       Required only when msgType=Merge -->
     </identification>
-
-    <name>                                              <!-- [M] card 0..1 Grouping | patient name wrapper -->
-      <value>TAN MEI LING</value>                       <!-- [M] card 0..1 String(128) | Full name as on ID document. Concatenate FirstName + SurName. -->
-      <title>MS</title>                                 <!-- [O] card 0..1 String(10) | Salutation/title. From Tbl_PatientParticular.Salutation. NHDD title code if available. -->
+    <name>
+      <!-- [M]  card 0..1  Grouping -->
+      <value>THALVINDERPAL SINGH SANDHU</value>
+      <!-- [M]  card 0..1  String(128) -->
+      <title>MR</title>
+      <!-- [O]  card 0..1  String(10) -->
     </name>
-
-    <aliasName>                                         <!-- [O] card 0..1 Grouping | alternate name (e.g. maiden name, name before religious change) -->
-      <value>CHEN MEI LING</value>                      <!-- [O] card 0..1 String(128) | Alias name. From Tbl_PatientParticular.OtherName if used. -->
-      <title>MS</title>                                 <!-- [O] card 0..1 String(10) | Title for alias name -->
-    </aliasName>
-
-    <contactDetails>                                    <!-- [O] card 0..1 Grouping | contact info wrapper -->
-
-      <address>                                         <!-- [O] card 0..* Grouping | up to one MAIN + one OTHER allowed -->
-        <type>MAIN</type>                               <!-- [M] card 0..1 String(5) | RESTRICTED VALUES: MAIN | OTHER (case-sensitive). Mandatory if address grouping present. -->
-        <streetLine1>BLK 123 #05-67</streetLine1>       <!-- [O] card 0..1 String(75) | First address line. Block + Storey + Unit. -->
-        <streetLine2>HOUGANG AVENUE 8</streetLine2>     <!-- [O] card 0..1 String(75) | Second address line. Street name. -->
-        <streetLine3>HOUGANG GREEN</streetLine3>        <!-- [O] card 0..1 String(75) | Third line (estate name). Often omitted in SG. -->
-        <streetLine4>NEAR HOUGANG MRT</streetLine4>     <!-- [O] card 0..1 String(75) | Fourth line (landmark). Almost always omitted. -->
-        <city>SINGAPORE</city>                          <!-- [O] card 0..1 String(50) | City name. -->
-        <country>AU</country>                           <!-- [O] card 0..1 String(50) | NHDD country code. AU=SINGAPORE, AR=MALAYSIA, AI=CHINA, etc. (Country.json) -->
-        <postalCode>530123</postalCode>                 <!-- [O] card 0..1 String(10) | 6-digit Singapore postal code. -->
+    <!-- aliasName                                          [O]  card 0..1  Grouping  (omit if no alias) -->
+    <!--   value                                            [O]  card 0..1  String(128) -->
+    <!--   title                                            [O]  card 0..1  String(10) -->
+    <contactDetails>
+      <!-- [O]  card 0..1  Grouping -->
+      <address>
+        <!-- [O]  card 0..*  Grouping  (multiple allowed; distinct type) -->
+        <type>MAIN</type>
+        <!-- [M]  card 0..1  String(5)    allowed: MAIN | OTHER -->
+        <streetLine1>BLK 123 #05-67</streetLine1>
+        <!-- [O]  card 0..1  String(75) -->
+        <streetLine2>HOUGANG AVENUE 8</streetLine2>
+        <!-- [O]  card 0..1  String(75) -->
+        <!-- streetLine3                                    [O]  card 0..1  String(75) -->
+        <!-- streetLine4                                    [O]  card 0..1  String(75) -->
+        <city>SINGAPORE</city>
+        <!-- [O]  card 0..1  String(50) -->
+        <country>AU</country>
+        <!-- [O]  card 0..1  String(50)   NHDD country code -->
+        <postalCode>530123</postalCode>
+        <!-- [O]  card 0..1  String(10) -->
       </address>
-
-      <phone>                                           <!-- [O] card 0..* Grouping | up to one HOME + one MOBILE + one WORK allowed -->
-        <type>MOBILE</type>                             <!-- [M] card 0..1 String(8) | RESTRICTED VALUES: HOME | MOBILE | WORK (case-sensitive). Mandatory if phone grouping present. -->
-        <countryCode>65</countryCode>                   <!-- [O] card 0..1 String(50) | International dialling code. SG = 65. -->
-        <areaCode>0</areaCode>                          <!-- [O] card 0..1 String(50) | Area/region code. Omit for SG mobiles (no area code). -->
-        <phoneNumber>91234567</phoneNumber>             <!-- [M] card 0..1 String(40) | Phone number digits. Mandatory if phone grouping present. -->
-        <extensionNumber>1234</extensionNumber>         <!-- [O] card 0..1 String(50) | Extension. Omit for mobile/home; use for office. -->
+      <phone>
+        <!-- [O]  card 0..*  Grouping  (multiple allowed; distinct type) -->
+        <type>MOBILE</type>
+        <!-- [M]  card 0..1  String(8)    allowed: HOME | MOBILE | WORK -->
+        <countryCode>65</countryCode>
+        <!-- [O]  card 0..1  String(50) -->
+        <!-- areaCode                                       [O]  card 0..1  String(50) -->
+        <phoneNumber>91234567</phoneNumber>
+        <!-- [M]  card 0..1  String(40) -->
+        <!-- extensionNumber                               [O]  card 0..1  String(50) -->
       </phone>
-
     </contactDetails>
-
-    <dateOfBirth>1985-08-15</dateOfBirth>               <!-- [M] card 0..1 Date | YYYY-MM-DD. Year-only DOB defaults to YYYY-01-01 per Guide. -->
-    <countryOfBirth>AU</countryOfBirth>                 <!-- [O] card 0..1 String(50) | NHDD country code. AU = Singapore (born in SG). -->
-    <gender>C</gender>                                  <!-- [M] card 0..1 String(128) | NHDD gender. C=Female, D=Male, E=Unknown (per Gender.json). -->
-    <emailAddress>tan.meiling@example.com</emailAddress>  <!-- [O] card 0..1 String(128) | Email address. -->
-    <nationality>EW</nationality>                       <!-- [O] card 0..1 String(128) | NHDD nationality. EW=Singapore Citizen, EI=Chinese, ER=Malaysian, etc. (Nationality.json) -->
-    <race>HE</race>                                     <!-- [M] card 0..1 String(128) | NHDD race. HE=Chinese, HL=Malay, HI=Indian, HG=Eurasian, HK=Japanese, etc. (Race.json) -->
-    <residencyStatus>X</residencyStatus>                <!-- [O] card 0..1 String(128) | NHDD residency. X=Citizen, V=PR, Q=Alien, T=Unknown, W=Not Applicable (Residential_Status.json) -->
-    <language>DI</language>                             <!-- [O] card 0..1 String(128) | NHDD language. DA=English, DI=Mandarin, DJ=Malay, DM=Tamil, etc. (Language.json) -->
-    <maritalStatus>7</maritalStatus>                    <!-- [O] card 0..1 String(128) | NHDD marital status. 6=Single, 7=Married, 8=Widowed, 9=Divorced (Marital_status.json) -->
-    <occupation>20010</occupation>                      <!-- [O] card 0..1 String(128) | NHDD occupation code. 20010=Cardiothoracic surgeon, 30020=Secretary, etc. (Occupation.json) -->
-    <VIPFlag>N</VIPFlag>                                <!-- [O] card 0..1 String(1) | Y or N. NEHR sources from MHA — typically omit unless source has the data. -->
-    <VVIPFlag>N</VVIPFlag>                              <!-- [O] card 0..1 String(1) | Y or N. NEHR currently does not capture VVIP. Typically omit. -->
-    <!-- <dateOfDeath>2024-12-31</dateOfDeath> -->      <!-- [O] card 0..1 Date | YYYY-MM-DD. NEHR sources from MHA. Omit when patient is alive. -->
-    <deathIndicator>N</deathIndicator>                  <!-- [O] card 0..1 String(1) | Y=dead, N=alive. NEHR sources from MHA — typically omit. -->
-    <religion>Z</religion>                              <!-- [O] card 0..1 String(128) | NHDD religion. Z=Buddhist, Y=Hindu, X=Muslim, V=Christian (Religion.json) -->
-
-    <nextOfKin>                                         <!-- [O] card 0..* Grouping | up to multiple NOKs (one per row in Tbl_Patient_NextOfKin) -->
-      <name>TAN WEI MING</name>                         <!-- [O] card 0..1 String(140) | Full name of NOK. Concatenate FirstName + SurName from Tbl_Patient_NextOfKin. -->
-      <phone>98765432</phone>                           <!-- [O] card 0..1 String(80) | Single phone string. Pick first non-null among Mobile/Home/Office in Tbl_Patient_NextOfKin. -->
-      <relationship>FFB002</relationship>               <!-- [O] card 0..1 String(30) | NHDD relationship. FFA001=Spouse, FFB002=Husband, FFC003=Wife, FFD004=Mother, FFE005=Father, FFH008=Son, FFI009=Daughter, etc. (NextOfKin.json) -->
-      <email>weiming.tan@example.com</email>            <!-- [O] card 0..1 String(100) | NOK email. From Tbl_Patient_NextOfKin.Email. -->
-    </nextOfKin>
-
+    <dateOfBirth>1987-12-27</dateOfBirth>
+    <!-- [M]  card 0..1  Date         format YYYY-MM-DD -->
+    <!-- DateOfBirth                                     [O]  card 0..1  String(50)   NHDD country code -->
+    <gender>D</gender>
+    <!-- [M]  card 0..1  String(128)  NHDD gender code -->
+    <!-- emailAddress                                       [O]  card 0..1  String(128) -->
+    <nationality>EW</nationality>
+    <!-- [O]  card 0..1  String(128)  NHDD nationality code -->
+    <race>HE</race>
+    <!-- [M]  card 0..1  String(128)  NHDD race code -->
+    <!-- residencyStatus                                    [O]  card 0..1  String(128)  NHDD: Citizen/PR/Alien/Unknown -->
+    <!-- language                                           [O]  card 0..1  String(128)  NHDD language code -->
+    <!-- maritalStatus                                      [O]  card 0..1  String(128)  NHDD marital code -->
+    <!-- occupation                                         [O]  card 0..1  String(128)  NHDD occupation code -->
+    <!-- VIPFlag                                            [O]  card 0..1  String(1)    Y | N. NEHR sources from MHA. -->
+    <!-- VVIPFlag                                           [O]  card 0..1  String(1)    Currently not captured in NEHR. -->
+    <!-- dateOfDeath                                        [O]  card 0..1  Date         format YYYY-MM-DD. NEHR sources from MHA. -->
+    <!-- deathIndicator                                     [O]  card 0..1  String(1)    Y | N. NEHR sources from MHA. -->
+    <!-- religion                                           [O]  card 0..1  String(128)  NHDD religion code -->
+    <!-- nextOfKin                                          [O]  card 0..*  Grouping  (multiple allowed) -->
+    <!--   name                                             [O]  card 0..1  String(140) -->
+    <!--   phone                                            [O]  card 0..1  String(80) -->
+    <!--   relationship                                     [O]  card 0..1  String(30)   NHDD relationship code -->
+    <!--   email                                            [O]  card 0..1  String(100) -->
   </patient>
-
-
-  <!-- ============================================================ -->
-  <!-- EVENT — encounter information (omitted for Administrative/Cancel/Merge) -->
-  <!-- ============================================================ -->
-  <event>                                               <!-- [C] card 0..1 Grouping | Mandatory when msgType=Clinical -->
-
+  <event>
+    <!-- [C]  card 0..1  Grouping  Mandatory when msgType=Clinical -->
     <recordIdentifier>bc1de036-0af1-4170-99c0-2907e26cf75422</recordIdentifier>
-                                                        <!-- [M] card 0..1 String(2000) | Stable across amendments/cancellations. From Tbl_PatientAppointment.Auto_AppointmentID (GUID). 1 unique per outpatient visit. -->
-    <id>000583cd-4522-4c40-8724-62762d6a7f15</id>       <!-- [M] card 1 String(2000) | Case/visit number. From Tbl_PatientAppointment.Appointment_ID. (id + movementSequenceNo combined ≤1997 chars.) -->
-    <movementSequenceNo>1</movementSequenceNo>          <!-- [O] card 0..1 String(2000) | Always "1" for outpatient. For inpatient, use the internal movement sequence number. -->
-    <eventStartDate>2026-05-04T15:30:00+08:00</eventStartDate>  <!-- [M] card 1 DateTime | When the visit started. Concatenate Appointment_Start_Date + App_Start_Time → ISO 8601 with +08:00. -->
-    <eventEndDate>2026-05-04T16:00:00+08:00</eventEndDate>  <!-- [M] card 0..1 DateTime | When the patient leaves. NOT bill finalisation. Mandatory for inpatient discharge; populate for outpatient when known. -->
-    <cancellationNotice>false</cancellationNotice>      <!-- [M] card 0..1 Boolean(5) | "true" for cancellation messages, "false" for new/update. -->
-    <institution>9403258</institution>                  <!-- [M] card 1 String(50) | HCI code serving this visit. Same as srcInstitution in most cases. From Tbl_Clinic via Branch FK. -->
-
-    <serviceSpecialty>                                  <!-- [M] card 0..1 Grouping | service specialty wrapper -->
-      <code>NEHR_SS_0002</code>                         <!-- [M] card 0..1 String(50) | Service_Specialty_(NEHR) code. NEHR_SS_0002=Cardiology, NEHR_SS_0003=Cardiothoracic Surgery, NEHR_SS_0042=Paediatric Cardiology. -->
-      <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Hardcoded scheme name. -->
-      <codingSchemeVersion>2.29</codingSchemeVersion>   <!-- [O] card 0..1 String(50) | Codeset Inventory version. Optional — typically omit. -->
-      <textDescription>Cardiology</textDescription>     <!-- [M] card 0..1 String(CLOB) | Description matching the code. -->
+    <!-- [M]  card 0..1  String(2000)  unique per visit, stable across amendments -->
+    <id>000583cd-4522-4c40-8724-62762d6a7f15</id>
+    <!-- [M]  card 1     String(2000)  case/visit number; (id+movementSequenceNo) ≤1997 chars -->
+    <movementSequenceNo>1</movementSequenceNo>
+    <!-- [O]  card 0..1  String(2000)  always "1" for outpatient -->
+    <eventStartDate>2026-05-04T15:30:00+08:00</eventStartDate>
+    <!-- [M]  card 1     DateTime  ISO 8601 with +08:00 -->
+    <eventEndDate>2026-05-04T16:00:00+08:00</eventEndDate>
+    <!-- [M]  card 0..1  DateTime  Mandatory for Inpatient Discharge; populate for outpatient when available -->
+    <cancellationNotice>false</cancellationNotice>
+    <!-- [M]  card 0..1  Boolean(5)    true on cancellation; false otherwise -->
+    <institution>9403258</institution>
+    <!-- [M]  card 1     String(50)    HCI code of serving institution -->
+    <serviceSpecialty>
+      <!-- [M]  card 0..1  Grouping -->
+      <code>NEHR_SS_0002</code>
+      <!-- [M]  card 0..1  String(50)    Service_Specialty_(NEHR) -->
+      <!--   Heart Clinic uses NEHR_SS_0002 = Cardiology -->
+      <!--   NEHR_SS_0003 = Cardiothoracic Surgery, NEHR_SS_0042 = Paediatric Cardiology -->
+      <codingSchemeName>Service_Specialty_(NEHR)</codingSchemeName>
+      <!-- [M]  card 0..1  String(50) -->
+      <!-- codingSchemeVersion                             [O]  card 0..1  String(50) -->
+      <textDescription>Cardiology</textDescription>
+      <!-- [M]  card 0..1  String(CLOB) -->
     </serviceSpecialty>
-
-    <patientType>                                       <!-- [M] card 1 Grouping | patient type wrapper (always present) -->
-      <code>O</code>                                    <!-- [M] card 0..1 String(50) | Patient_Type_(NEHR) code. O=Outpatient, I=Inpatient. Always O for Heart Clinic. -->
-      <codingSchemeName>Patient_Type_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Hardcoded scheme name. -->
-      <codingSchemeVersion>2.29</codingSchemeVersion>   <!-- [O] card 0..1 String(50) | Optional — typically omit. -->
-      <textDescription>Outpatient</textDescription>     <!-- [M] card 0..1 String(CLOB) | "Outpatient" for code O, "Inpatient" for code I. -->
+    <patientType>
+      <!-- [M]  card 1     Grouping -->
+      <code>O</code>
+      <!-- [M]  card 0..1  String(50)    Patient_Type_(NEHR): O=Outpatient, I=Inpatient -->
+      <codingSchemeName>Patient_Type_(NEHR)</codingSchemeName>
+      <!-- [M]  card 0..1  String(50) -->
+      <!-- codingSchemeVersion                             [O]  card 0..1  String(50) -->
+      <textDescription>Outpatient</textDescription>
+      <!-- [M]  card 0..1  String(CLOB) -->
     </patientType>
-
-    <eventType>                                         <!-- [M] card 1 Grouping | event type wrapper (always present) -->
-      <code>4</code>                                    <!-- [M] card 0..1 String(50) | Movement_Category_(NEHR) code. 1=Admission, 2=Discharge, 4=Outpatient Visit. (No code 3.) -->
-      <codingSchemeName>Movement_Category_(NEHR)</codingSchemeName>  <!-- [M] card 0..1 String(50) | Hardcoded scheme name. -->
-      <codingSchemeVersion>2.29</codingSchemeVersion>   <!-- [O] card 0..1 String(50) | Optional — typically omit. -->
-      <textDescription>Outpatient Visit</textDescription>  <!-- [M] card 0..1 String(CLOB) | Description matching the code. -->
+    <eventType>
+      <!-- [M]  card 1     Grouping -->
+      <code>4</code>
+      <!-- [M]  card 0..1  String(50)    Movement_Category_(NEHR): -->
+      <!--   1 = Admission (inpatient) -->
+      <!--   2 = Discharge (inpatient) -->
+      <!--   4 = Outpatient Visit -->
+      <codingSchemeName>Movement_Category_(NEHR)</codingSchemeName>
+      <!-- [M]  card 0..1  String(50) -->
+      <!-- codingSchemeVersion                             [O]  card 0..1  String(50) -->
+      <textDescription>Outpatient Visit</textDescription>
+      <!-- [M]  card 0..1  String(CLOB) -->
     </eventType>
-
-    <attendingClinician>                                <!-- [M] card 0..1 Grouping | the doctor seeing the patient -->
-      <id>04173D</id>                                   <!-- [M] card 0..1 String(1919) | MCR (Medical Council Registration). From Tbl_Doctor.RegNo via resource chain. -->
-      <name>Ruth Kam</name>                             <!-- [M] card 0..1 String(80) | Doctor's full name. From Tbl_Doctor.First_Name + Sur_Name. -->
+    <attendingClinician>
+      <!-- [M]  card 0..1  Grouping -->
+      <id>04173D</id>
+      <!-- [M]  card 0..1  String(1919)  MCR -->
+      <name>Ruth Kam</name>
+      <!-- [M]  card 0..1  String(80) -->
     </attendingClinician>
-
-
-    <!-- ============================================================ -->
-    <!-- INPATIENT-ONLY ELEMENTS — DO NOT INCLUDE FOR HEART CLINIC     -->
-    <!-- ============================================================ -->
-    <!-- The three sections below are shown for reference only.         -->
-    <!-- They are Mandatory for Inpatient encounters but must be        -->
-    <!-- OMITTED entirely for outpatient cardiology visits.             -->
-    <!-- Heart Clinic (cardiology specialist outpatient) never emits    -->
-    <!-- any of these. Comment out / skip in adapter logic.             -->
-    <!-- ============================================================ -->
-
-    <!-- INPATIENT ONLY — for eventType=1 (Admission) -->
-    <admittingClinician>                                <!-- [C] card 0..1 Grouping | INPATIENT ONLY (Mandatory when Admission). -->
-      <id>M99999X</id>                                  <!-- [M] card 0..1 String(1919) | INPATIENT ONLY. Admitting doctor's MCR. -->
-      <name>Dr Example Inpatient</name>                 <!-- [M] card 0..1 String(80) | INPATIENT ONLY. Admitting doctor's name. -->
-    </admittingClinician>
-
-    <!-- INPATIENT ONLY — for eventType=2 (Discharge) -->
-    <dischargingClinician>                              <!-- [C] card 0..1 Grouping | INPATIENT ONLY (Mandatory when Discharge). -->
-      <id>D88888Y</id>                                  <!-- [M] card 0..1 String(1919) | INPATIENT ONLY. Discharging doctor's MCR. -->
-      <name>Dr Example Discharger</name>                <!-- [M] card 0..1 String(80) | INPATIENT ONLY. Discharging doctor's name. -->
-    </dischargingClinician>
-
-    <referringClinician>                                <!-- [O] card 0..1 Grouping | The doctor who referred the patient (if known). Outpatient OK. -->
-      <id>M12345A</id>                                  <!-- [O] card 0..1 String(1919) | Referring doctor's MCR. From Tbl_PatientParticular.ReferredBy if structured. -->
-      <name>DR JOHN TAN</name>                          <!-- [M] card 0..1 String(80) | Referring doctor's name. Mandatory if grouping present. -->
-    </referringClinician>
-
-    <!-- INPATIENT ONLY — discharge information block -->
-    <dischargeInformation>                              <!-- [C] card 0..1 Grouping | INPATIENT ONLY (Mandatory when Discharge). -->
-      <dischargedToOrg>                                 <!-- [O] card 0..1 Grouping | INPATIENT ONLY. Where the patient was discharged to. -->
-        <code>HOME</code>                               <!-- [O] card 0..1 String(50) | INPATIENT ONLY. Code for the destination. -->
-        <codingSchemeName>Discharge_Destination</codingSchemeName>  <!-- [O] card 0..1 String(50) | INPATIENT ONLY. Scheme name. -->
-        <codingSchemeVersion>1.0</codingSchemeVersion>  <!-- [O] card 0..1 String(50) | INPATIENT ONLY. Version. -->
-        <textDescription>Home</textDescription>         <!-- [M] card 0..1 String(CLOB) | INPATIENT ONLY. Description. Mandatory if grouping present. -->
-      </dischargedToOrg>
-      <dischargeOutcome>Stable, follow-up in 2 weeks</dischargeOutcome>  <!-- [O] card 0..1 String(2000) | INPATIENT ONLY. Discharge outcome free text. -->
-      <dischargeDisposition>                            <!-- [C] card 0..1 Grouping | INPATIENT ONLY (Mandatory when Discharge). -->
-        <code>RECOVERED</code>                          <!-- [O] card 0..1 String(50) | INPATIENT ONLY. -->
-        <codingSchemeName>Discharge_Disposition</codingSchemeName>  <!-- [O] card 0..1 String(50) | INPATIENT ONLY. -->
-        <codingSchemeVersion>1.0</codingSchemeVersion>  <!-- [O] card 0..1 String(50) | INPATIENT ONLY. -->
-        <textDescription>Recovered</textDescription>    <!-- [M] card 0..1 String(CLOB) | INPATIENT ONLY. Mandatory if grouping present. -->
-      </dischargeDisposition>
-    </dischargeInformation>
-
-
-    <movementType>                                      <!-- [O] card 0..1 Grouping | Visit_Type_(NEHR) for outpatient or Admission_Type_(NEHR) for inpatient -->
-      <code>1</code>                                    <!-- [O] card 0..1 String(50) | For outpatient: Visit_Type_(NEHR) — 1=Primary Care Visit, 2=Emergency Visit. For inpatient admission: Admission_Type_(NEHR) — 1=Nursing Home, 2=A&E. -->
-      <codingSchemeName>Visit_Type_(NEHR)</codingSchemeName>  <!-- [O] card 0..1 String(50) | Visit_Type_(NEHR) for outpatient, Admission_Type_(NEHR) for inpatient. -->
-      <codingSchemeVersion>2.29</codingSchemeVersion>   <!-- [O] card 0..1 String(50) | Optional. -->
-      <textDescription>Primary Care Visit</textDescription>  <!-- [M] card 0..1 String(CLOB) | Description matching the code. Mandatory if grouping present. -->
+    <!-- admittingClinician                                 [C]  card 0..1  Grouping  Mandatory when Inpatient Admission (eventType=1). N/A for outpatient. -->
+    <!--   id                                               [M]  card 0..1  String(1919) -->
+    <!--   name                                             [M]  card 0..1  String(80) -->
+    <!-- dischargingClinician                               [C]  card 0..1  Grouping  Mandatory when Inpatient Discharge (eventType=2). N/A for outpatient. -->
+    <!--   id                                               [M]  card 0..1  String(1919) -->
+    <!--   name                                             [M]  card 0..1  String(80) -->
+    <!-- referringClinician                                 [O]  card 0..1  Grouping -->
+    <!--   id                                               [O]  card 0..1  String(1919)  MCR -->
+    <!--   name                                             [M]  card 0..1  String(80)    Mandatory within group when grouping is mapped -->
+    <!-- dischargeInformation                               [C]  card 0..1  Grouping  Mandatory when Inpatient Discharge (eventType=2). N/A for outpatient. -->
+    <!--   dischargedToOrg                                  [O]  card 0..1  Grouping -->
+    <!--     code                                           [O]  card 0..1  String(50) -->
+    <!--     codingSchemeName                               [O]  card 0..1  String(50) -->
+    <!--     codingSchemeVersion                            [O]  card 0..1  String(50) -->
+    <!--     textDescription                                [M]  card 0..1  String(CLOB) -->
+    <!--   dischargeOutcome                                 [O]  card 0..1  String(2000) -->
+    <!--   dischargeDisposition                             [C]  card 0..1  Grouping  Mandatory when Inpatient Discharge -->
+    <!--     code                                           [O]  card 0..1  String(50) -->
+    <!--     codingSchemeName                               [O]  card 0..1  String(50) -->
+    <!--     codingSchemeVersion                            [O]  card 0..1  String(50) -->
+    <!--     textDescription                                [M]  card 0..1  String(CLOB) -->
+    <movementType>
+      <!-- [O]  card 0..1  Grouping -->
+      <code>1</code>
+      <!-- [O]  card 0..1  String(50) -->
+      <!--   Outpatient codeset Visit_Type_(NEHR): -->
+      <!--     1 = Primary Care Visit -->
+      <!--     2 = Emergency Visit -->
+      <!--   Inpatient codeset Admission_Type_(NEHR): -->
+      <!--     1 = Nursing Home -->
+      <!--     2 = A&E -->
+      <codingSchemeName>Visit_Type_(NEHR)</codingSchemeName>
+      <!-- [O]  card 0..1  String(50) -->
+      <!-- codingSchemeVersion                             [O]  card 0..1  String(50) -->
+      <textDescription>Primary Care Visit</textDescription>
+      <!-- [M]  card 0..1  String(CLOB) -->
     </movementType>
-
   </event>
-
 </putEvent>
-
-
 <!--
 ================================================================================
-  HOW TO USE THIS REFERENCE
+  CARDINALITY SUMMARY
 ================================================================================
-
-  1) STRUCTURE READING
-     Read top to bottom. Element ORDER is what the spec defines and what XSD
-     validation enforces — preserve it when constructing real messages.
-
-  2) ANNOTATION DECODE
-     <element>VALUE</element>  <! [M] card 1 String(50) | meaning >
-                                  ↑    ↑     ↑          ↑
-                                  Sig  Card  Type/Len   What/Source
-
-     Significance: M / O / C
-       M = Mandatory (must populate)
-       O = Optional (populate if available; otherwise OMIT entirely)
-       C = Conditional Mandatory (mandatory when condition holds)
-
-     Cardinality: how many times the element can appear
-       1     = exactly once
-       0..1  = zero or one
-       0..*  = zero or many
-       1..2  = exactly one or two
-
-     Type/Length: data type with max length
-       String(N), String(CLOB), Long(N), Date, DateTime, Boolean(5), Grouping
-
-  3) SIGNIFICANCE-PRECEDENCE RULE
-     A Mandatory child within an Optional parent is Mandatory only IF the parent
-     is included. If you skip the parent, you skip the child too.
-
-       Optional parent:  <address>, <phone>, <referringClinician>, <nextOfKin>
-       Inside them, Mandatory children become required ONLY if you include the parent.
-
-  4) NO EMPTY TAGS RULE
-     Per Synapxe Guide v0.42 (page 10):
-       Source must EXCLUDE empty XML tags. Do not emit:
-         ❌ <tag></tag>
-         ❌ <tag/>
-         ❌ <tag>NA</tag>  (unless NA is a meaning-bearing codeset value)
-       If a value is missing or null, OMIT the entire element.
-
-  5) FOR HEART CLINIC SPECIFICALLY
-     - patientType.code = "O" (always)
-     - eventType.code = "4" (always)
-     - movementType.code = "1" (always, Visit_Type_(NEHR))
-     - serviceSpecialty.code = "NEHR_SS_0002" (Cardiology, hardcode)
-     - srcInstitution = "9403258" (main branch HCI; Farrer TBC)
-     - srcApplication = "MDX-GCMS"
-     - licenseeNumber = "L/9403258/MDS/007/242"
-     - DO NOT emit admittingClinician, dischargingClinician, dischargeInformation
-       (those are for inpatient encounters only)
-
-  6) NHDD CODESETS
-     Patient demographics use NHDD codes. The values shown above come from
-     the sample JSON files in skills/nehr-data-mapping/references/nhdd-samples/.
-     NB: these JSON values may differ from the spec's published sample values.
-     Confirm with client before production transmission.
-
-  7) SYNAPXE CODESETS
-     Visit/event codings (patientType, eventType, movementType, serviceSpecialty)
-     come from INT_2_1_Onboarding_CodeSetInventory_v2.29 (in workspace root).
-
-  8) RUNNING THIS FILE
-     This file is for reading, not for sending. It mixes outpatient and
-     inpatient elements which would be invalid in any single transmission.
-     For real transmissions: see NEHR_putEvent_Sample_Heart_Clinic.xml.
+  putEvent root      = 1
+  controlHeader      = 1
+  patient            = 1
+  patient.identification = 1..2  (allow 1 or 2 ID blocks — NRIC + passport, etc.)
+  patient.contactDetails.address = 0..*  (one MAIN, plus optional OTHER)
+  patient.contactDetails.phone   = 0..*  (one HOME / MOBILE / WORK each, max)
+  patient.nextOfKin   = 0..*
+  event              = 0..1     (Mandatory grouping; absent only for non-Clinical msgTypes)
+  → For multiple patients/visits, send multiple separate XML documents
+    (one HTTPS POST per message).
 
 ================================================================================
   MESSAGE TYPE VARIATIONS
 ================================================================================
-  Clinical          : controlHeader + patient + event. msgType=Clinical.
-  Administrative    : controlHeader + patient (NO event). msgType=Administrative.
-  Cancel            : controlHeader + patient (NO event). msgType=Cancel.
-  Merge             : controlHeader + patient WITH patientMergeType. msgType=Merge.
+  Clinical (this example): controlHeader + patient + event. msgType=Clinical.
+  Administrative:          controlHeader + patient (no event). msgType=Administrative.
+  Cancel:                  controlHeader + patient (no event). msgType=Cancel.
+  Merge:                   controlHeader + patient with patientMergeType. msgType=Merge.
 
-  → For Merge: include <patientMergeType>OBSOLETE</patientMergeType> in the
-    obsolete patient's identification block, and submit a second message with
-    <patientMergeType>SURVIVOR</patientMergeType> for the survivor.
-
+================================================================================
+  DATA TYPE GLOSSARY
+================================================================================
+  String(N)      varchar, max N characters
+  String(CLOB)   character large object (no fixed maximum; for free text descriptions)
+  Long(N)        long integer up to N digits
+  Date           ISO 8601 date    e.g.  1987-12-27
+  DateTime       ISO 8601 datetime e.g.  2026-05-04T15:30:00+08:00
+  Boolean(5)     "true" or "false" (max 5 chars)
+  Grouping       XML element wrapper (no leaf value)
 ================================================================================
 -->
