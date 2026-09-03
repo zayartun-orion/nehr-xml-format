@@ -1,306 +1,69 @@
-# Cardiology (putCardiology) — What To Fix
+# putCardiology — Fixes To Make
 
-**For the developer.** Simple English. Fix number 1 first, then 2, then 3.
+**For the developer. Simple English.** Checked against the Excel mapping template `putCardiology_v0.2_20251224.xlsx` — that file is the rule.
 
-| | |
-|---|---|
-| Correct example file | `putCardiology-corrected.xml` — in this folder. Copy the shape from it. |
-| More detail (harder English) | `FIXES.md` — in this folder. |
-| Check your file | `python3 tools/check_xml.py your_file.xml` |
+Endpoint checked: `http://ec2-47-131-196-190.ap-southeast-1.compute.amazonaws.com/nehr/xml/cardiology` (PUT). 16 messages, each with an attached PDF report.
 
-⚠️ **Do putEvent first.** This service needs the event id that putEvent makes.
+Good news first: the codes are in good shape here. All six code-set names are correct (`Document_Type_(NEHR)`, `Document_Status_(NEHR)`, `Cardiology_Procedure_Category_(NEHR)`, `Attachment_Category_(NEHR)`, `Attachment_Content_Type_(NEHR)`, `Attachment_Language_(NEHR)`), each with a real code. The `eventId` value matches putEvent on all 16. The main problems are two spelling mistakes, one capital letter, field order, and a few empty fields.
 
 ---
 
-## ✅ First, good news
+## Fix now
 
-**The PDF attachment part is the best work in any of the 7 services.** We checked all 10 records:
+**1. Spelling: `langauge` → `language`.**
+Inside `<fileAttachment>` you send `<langauge>` on all 16 messages. The Excel (row 478) spells it `language`. NEHR will not recognise the misspelled tag, and this field is **Mandatory**. Fix the spelling.
 
-- The PDF turns back into a real PDF file every time. No broken files.
-- `size` is the size of the **real PDF**, not the size of the encoded text. This is the easy thing to get wrong, and you got it right in all 10.
-- `attachmentCategory` `1`, `contentType` `1`, `language` `EN` — all correct codes.
+**2. Spelling: `titile` → `title`.**
+Inside `<fileAttachment>` you send `<titile>` on all 16 messages. The Excel (row 486) spells it `title`. This one matters extra: because you send the report as an attachment only (no discrete text — see "Please confirm"), the Excel says the `title` is what NEHR shows on screen for the attachment. With the wrong spelling, that title is lost. Fix it.
 
-**Do not change the attachment encoding.** The problems in this service are names, order, times, and one code.
+**3. Capital letter: `eventId` → `eventID`.**
+Inside `<document>` you send `<eventId>`. The Excel (row 70) names it `eventID` (capital ID). The value is correct — just fix the tag name. XML tags are case-sensitive.
 
----
+**4. `document` field order is wrong.**
+You send `<cardiologyReports>` as the **first** child of `<document>`. The Excel puts it **last**, after `author`. The Excel order is:
+id, lastUpdatedTime, eventID, remarks, institution, accessionNumber, docType, status, author, cardiologyReports.
+Move `cardiologyReports` to the end of `<document>`. (NEHR most likely checks this order through the XSD.)
 
-## The list
+**5. `lastUpdatedTime` is empty but Mandatory.**
+You send `<lastUpdatedTime />` on all 16. The Excel (row 69) marks it **Mandatory**. Put the real last-updated time, in the format `CCYY-MM-DDThh:mm:ss`.
 
-| # | What to fix | How hard |
-|---|---|---|
-| 1 | One `<putCardiology>` per message | Easy |
-| 2 | Change the namespace | Easy |
-| 3 | ⭑ Two tag names are spelled wrong | Easy |
-| 4 | Small letter at the start of other tag names | Easy |
-| 5 | Delete `msgType`, `patientMergeType`, `<Id>`, empty tags | Easy |
-| 6 | `<name><name>` must be `<name><value>` | Easy |
-| 7 | ⭑ `eventId` must be `eventID` — **big D** | Easy |
-| 8 | ⭑ The reports must come LAST, not first | Medium |
-| 9 | One code field uses the wrong codeset | Easy |
-| 10 | All 3 times are the wrong time | Medium |
-| 11 | `msgID` — send the full ID, do not cut it | Easy |
-| 12 | Doctor number needs `M` in front | Easy |
-| 13 | Add `primaryOperator/id` | Easy |
-| 14 | `race` is empty | Need data |
-| 15 | `gender` — **do not change yet** | Wait |
+**6. `cardiologyReport > type > textDescription` is empty.**
+You send `<textDescription />` while the `type` code is filled (code `2`). When the code is present, the Excel (row 104) makes the description Mandatory. Put the description text (e.g. the procedure category name), or drop the whole `type` block if there is nothing to send.
+
+**7. Date-time format on the report dates.**
+`startDateTime` and `reportDateTime` are sent as `2026-09-01T19:02:04.2381552+08:00` — with fractional seconds and a timezone. The Excel (rows 92, 93) format is `CCYY-MM-DDThh:mm:ss` — no fractional seconds, no timezone. Remove the `.2381552` and the `+08:00`. Also check these should be the **real** report times, not the send time (all currently show `19:02`).
+
+**8. Do not send empty tags.**
+Empty tags to remove: `<lastUpdatedTime />` (fix 5 — fill instead), `<textDescription />` in the report type (fix 6), and the patient block empties below. The Readme says: no value → delete the tag (unless Mandatory, then fill it).
 
 ---
 
-## 1. One `<putCardiology>` per message
+## Same as putEvent (the patient block is identical)
 
-**Now (wrong):**
-```xml
-<ArrayOfPutCardiology>
-  <PutCardiology> ...report 1... </PutCardiology>
-  <PutCardiology> ...report 2... </PutCardiology>
-</ArrayOfPutCardiology>
-```
+The `<patient>` block is the same as in putEvent, with the same problems. Apply the putEvent fixes here too:
 
-**Change to:**
-```xml
-<putCardiology xmlns="http://www.mohh.com/nehr">
-  ...report 1...
-</putCardiology>
-```
+- `msgType` missing (Mandatory) — add `<msgType>Clinical</msgType>`.
+- Empty `<address/>`, `<phone/>`, `<race/>`, `<language/>`, `<occupation/>` — delete them.
+- `race` is Mandatory but empty — needs a real NHDD code (wait for the NHDD list).
+- `gender`, `nationality`, `maritalStatus` — waiting for the official NHDD code list. Do not guess.
+- `type` hardcoded `SP` but most IDs are passports — set from the real document type.
+- `title` — send `Mr`, not `Mr.`.
+- `msgID` — send the full id, not cut to 20 characters.
+- Doctor number `03009J` (used in `author > id` and `primaryOperator > id`) — Singapore MCR starts with `M` (e.g. `M03009J`). Check and add the `M`.
 
-NEHR reads one report at a time. There is no box for many reports.
+See `putEvent_Developer_Fixes_2026Sep01.md` for detail.
 
 ---
 
-## 2. Change the namespace
+## Please confirm
 
-**Now (wrong):** `xmlns:NEHR="http://www.synapxe.sg/nehr/putEvent"`
+**A. Attachment-only documents (no `<content>` / `<Composition>`).**
+You send the report as a PDF attachment only — there is no `<content>`/`<Composition>` segment with discrete text. The Excel allows this, but only if the attachment `title` is present so NEHR can render it. So this is fine **once Fix 2 (the `titile` spelling) is done**. Please confirm with NEHR that attachment-only cardiology documents are accepted for this clinic.
 
-The address is wrong, and it says `putEvent` — a different service. Also `xmlns:NEHR=` is declared but `NEHR:` is never used on any tag.
-
-**Change to:** `xmlns="http://www.mohh.com/nehr"` — with no `:NEHR` part.
-
----
-
-## 3. ⭑ Two tag names are spelled wrong ⚠️
-
-| You write | Correct spelling |
-|---|---|
-| `<Langauge>` | `<language>` |
-| `<titile>` | `<title>` |
-
-These are **typing mistakes**, not NEHR rules. NEHR spells both words correctly in its schema file **and** in its template. Please search your code for these two words and fix them.
-
-**`title` is important.** This clinic sends a PDF with no report text. In that case, `title` is the name that the doctor sees on the NEHR screen. If the tag is spelled `titile`, **NEHR shows nothing** — the doctor sees an attachment with no name.
+**B. `document > id`** — this is the document's unique record id (a UUID, e.g. `121685dd-...`). The Excel (row 68) says it must be unique and stay the **same** if the document is later amended or cancelled. Confirm it is saved and reused.
 
 ---
 
-## 4. Small letter at the start of other tag names
+## Important — not an XML issue (same as putEvent)
 
-**Now (wrong):** `ControlHeader` `Patient` `Document` `CardiologyReports` `CardiologyReport` `Name` `Type` `PrimaryOperator` `DocType` `Status` `Author` `FileAttachment` `AttachmentCategory` `ContentType` `ReportDateTime`
-
-**Change to:** `controlHeader` `patient` `document` `cardiologyReports` `cardiologyReport` `name` `type` `primaryOperator` `docType` `status` `author` `fileAttachment` `attachmentCategory` `contentType` `reportDateTime`
-
----
-
-## 5. Delete `msgType`, `patientMergeType`, `<Id>`, empty tags
-
-| Delete this | Why |
-|---|---|
-| `<msgType>Clinical</msgType>` | `msgType` exists **only in putEvent**. Not here. |
-| `<patientMergeType>OBSOLETE</patientMergeType>` | Does not exist in this service at all. |
-| `<Id>` inside the control header | Your internal ID. NEHR has no such field. |
-| `<contactDetails/>` `<race/>` `<language/>` `<occupation/>` — **inside `<patient>` only** | Empty tags are not allowed. No value → do not write the tag. |
-
-> ⚠️ **Careful — there are TWO tags called `language` in this message.**
->
-> | Where | What to do |
-> |---|---|
-> | Inside `<patient>` | It is empty → **delete it** |
-> | Inside `<fileAttachment>` | It holds `EN` → **keep it**. This one is correct. |
->
-> Do not delete both. Check the parent tag first.
-
----
-
-## 6. `<name><name>` must be `<name><value>`
-
-```xml
-<name><value>TAN AH KOW</value></name>
-```
-
----
-
-## 7. ⭑ `eventId` must be `eventID` — big D ⚠️
-
-**Now (wrong):**
-```xml
-<eventId>evt-0708202610475856713032562</eventId>
-```
-**Change to:**
-```xml
-<eventID>0708202610475856713032562</eventID>
-```
-
-Two things: **big `D`** in this service, and **remove `evt-`**. The value must match the `event/id` from putEvent letter by letter, or the ECG links to no visit.
-
----
-
-## 8. ⭑ The reports must come LAST, not first ⚠️
-
-**Now (wrong):** `cardiologyReports` is the **first** tag inside `document`.
-
-**Correct order inside `<document>`:**
-```
-id, lastUpdatedTime, eventID, institution, docType, status, author, cardiologyReports
-```
-
-So `cardiologyReports` goes **last**. All the information about the document comes first, then the reports.
-
-Easiest way: copy the order straight from the example file.
-
----
-
-## 9. One code field uses the wrong codeset
-
-**Now (wrong):**
-```xml
-<cardiologyReport>
-  <type>
-    <code>Cardiology</code>
-    <codingSchemeName>Document_Type_(NEHR)</codingSchemeName>
-```
-
-**Change to:**
-```xml
-<cardiologyReport>
-  <type>
-    <code>2</code>
-    <codingSchemeName>Cardiology_Procedure_Category_(NEHR)</codingSchemeName>
-    <textDescription>Non Invasive</textDescription>
-```
-
-**Why:** `type` here means **what kind of heart test**, not what kind of document. You used the document codeset in the wrong place.
-
-The 4 allowed codes are:
-
-| Code | Meaning |
-|---|---|
-| 1 | Invasive |
-| **2** | **Non Invasive** |
-| 3 | Nuclear |
-| 4 | Peripheral |
-
-A 12-lead ECG is **non-invasive**, so code `2`. **Please ask the clinic** to confirm, and to tell you the code for any other heart test they do.
-
-**Careful:** there is another field called `docType` in the same message. **That one is correct** and really does use `Document_Type_(NEHR)` with the code `Cardiology`. Do not change `docType`. Only `cardiologyReport/type` is wrong.
-
----
-
-## 10. All 3 times are the wrong time ⚠️
-
-`lastUpdatedTime`, `startDateTime` and `reportDateTime` all carry the time your program ran — about **22:40 at night** — instead of the real test time.
-
-Look at the pattern. Real clinic tests all over the day, but all stamped within 33 seconds at night:
-
-| Record | Time you send | Real ECG time |
-|---|---|---|
-| 1 | 22:40:39 | **10:52:16** |
-| 2 | 22:40:43 | 10:14:47 |
-| 3 | 22:40:45 | 14:18:57 |
-| 9 | 22:41:10 | 09:12:45 |
-
-**Where we found the real time:** it is inside the attachment file name — `UPG_20260807105216403` means 2026-08-07, 10:52:16.403.
-
-We used the file-name time in the example. **But please do not do it that way in your code.** Reading a time out of a file name is not safe. The clinic system knows the real time — send that.
-
-**Also:** `startDateTime` (when the test was done) and `reportDateTime` (when the report was written) are two different moments. Today you send the same value for both.
-
-**And the format:** `2026-08-07T10:52:16+08:00` — whole seconds only. Delete the numbers after the dot.
-
----
-
-## 11. `msgID` — send the full ID, do not cut it
-
-**Now (wrong):** `MDX-GCMS-fe01fe9c-74c5-46f1-8`
-
-Do not put `MDX-GCMS-` in front. Do not cut at 29 letters (NEHR allows 50).
-
----
-
-## 12. Doctor number needs `M` in front
-
-**Now (wrong):** `03009J` in `author`
-**Change to:** `M03009J`
-
----
-
-## 13. Add `primaryOperator/id`
-
-Today `primaryOperator` has only a name, no ID. The MCR number is already in `author` in the same record.
-
-```xml
-<primaryOperator>
-  <id>M03009J</id>          <!-- ADD -->
-  <name><value>PHILIP KOH</value></name>
-</primaryOperator>
-```
-
-Optional, but you already have the value.
-
----
-
-## 14. `race` — needs real data
-
-Required by NEHR, but sent empty. We did not put a fake value. Someone must connect `race` from patient registration.
-
----
-
-## 15. `gender` — do NOT change this yet ⚠️
-
-Your system sends `C` / `D`. NEHR's template says `M`/`F`/`U`, but NEHR's own NHDD sample says `C` = Female, `D` = Male.
-
-**So your value may already be correct.** Please wait for the answer. Do not convert.
-
----
-
-## Do NOT change these — they are already correct
-
-- `docType` code `Cardiology` — see the warning in number 9
-- `status` code `Final` with the text `Finalized` — you used the codeset word, not the code word. This is correct.
-- `attachmentCategory` `1`, `contentType` `1`, `language` `EN`
-- The base64 encoding of the PDF
-- `size` = the size of the real PDF
-- `sequenceNo`
-- `institution` = HCI code
-- `cardiologyReport/name` sending only `textDescription` ("12-lead ECG")
-- `document/id`
-
----
-
-## Two things the clinic must answer (not your job)
-
-**1. Is a PDF alone enough?**
-
-Today the clinic sends a PDF with no report text (`<content>`). NEHR's template is not clear about this — one row says the text is required, another row says the `title` is used *when the text is missing*, and the schema file says the text is optional.
-
-The clinic is asking NEHR. **If NEHR says the text is required**, this becomes a much bigger job — a full report structure must be built. Please wait for that answer before planning the work.
-
-**2. One NEHR file is missing.**
-
-NEHR did not include a schema file called `Section.xsd` in the pack. We checked everything. Without it, the report-text part of this service cannot be fully checked by the tool.
-
-The clinic has asked NEHR to send it. This only matters if the answer to question 1 is "text is required".
-
----
-
-## One note about the source file
-
-When we did this review on 9 Aug, the web address gave no data (`404 There is no data provided.`). So we used the copy saved on 7 Aug: `xml-fixes/source-xml/cardiology.xml` (10 records).
-
-Please check the tag names again when the address is working.
-
----
-
-## Check your work
-
-```bash
-python3 tools/check_xml.py your_file.xml
-```
-
-Run it after every change. When you see `RESULT: PASSED`, that file is good.
+This endpoint is open on plain `http://` with **no login** and returns **real patient records and their attached cardiology report PDFs**. Please put it behind the secure channel and use fake test data before more testing.
