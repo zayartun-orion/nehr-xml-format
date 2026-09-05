@@ -225,7 +225,7 @@
       </practitioner>
     </recorder>
 
-    <reportedDate>2026-06-09T09:14:00</reportedDate>    <!-- [M] card 1     DateTime  [-]CCYY-MM-DDThh:mm:ss -->
+    <reportedDate>2026-06-09T09:14:00</reportedDate>    <!-- [M] card 1     DateTime  [-]YYYY-MM-DdTHH:mm:sszzz -->
 
     <asserter>                                          <!-- [O] card 0..1  Grouping  (who clinically asserted the allergy) -->
       <practitioner>                                    <!-- [O] card 0..*  Grouping -->

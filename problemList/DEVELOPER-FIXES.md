@@ -45,7 +45,7 @@ Fix: put the **real** record creation time in `createdDateTime`.
 
 **5. Check the date-time format on the record dates.**
 `createdDateTime`, `updatedDateTime` and `lastUpdatedDateTime` are sent with a timezone: `...+08:00`.
-In the Excel, these three use the format `CCYY-MM-DDThh:mm:ss` — **no timezone**. (Only `msgDateTime` keeps the `+08:00`.)
+In the Excel, these three use the format `YYYY-MM-DdTHH:mm:sszzz` — **no timezone**. (Only `msgDateTime` keeps the `+08:00`.)
 Please check with NEHR and, if needed, drop the `+08:00` from these three fields.
 
 **6. Do not send empty tags or `nil`.**

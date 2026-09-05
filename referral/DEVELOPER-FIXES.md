@@ -42,7 +42,7 @@ In the section file attachment you send `<langauge>` (Excel row 630 spells it `l
 You send a UUID (`870e645e-...`). The Excel (row 594) says it must be the **putEvent event id**. You already put the correct event id in the composition-level `encounter` — use the same value here, or drop this optional `encounter` block if you do not need it.
 
 **6. Date-time format on `dateSent`.**
-Sent as `2026-09-01T19:02:01.9313982+08:00` — with fractional seconds and a timezone. The Excel (row 596) format is `CCYY-MM-DDThh:mm:ss` — no fractional seconds, no timezone. Also check it should be the real send time, not the message time.
+Sent as `2026-09-01T19:02:01.9313982+08:00` — with fractional seconds and a timezone. The Excel (row 596) format is `YYYY-MM-DdTHH:mm:sszzz` — no fractional seconds, no timezone. Also check it should be the real send time, not the message time.
 
 **7. Do not send empty tags.**
 `<reason />` is sent empty on all 23 (Optional — delete it). Plus the patient block empties below. Readme rule: no value → delete the tag.

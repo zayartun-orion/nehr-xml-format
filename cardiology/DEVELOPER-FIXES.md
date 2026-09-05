@@ -25,13 +25,13 @@ id, lastUpdatedTime, eventID, remarks, institution, accessionNumber, docType, st
 Move `cardiologyReports` to the end of `<document>`. (NEHR most likely checks this order through the XSD.)
 
 **5. `lastUpdatedTime` is empty but Mandatory.**
-You send `<lastUpdatedTime />` on all 16. The Excel (row 69) marks it **Mandatory**. Put the real last-updated time, in the format `CCYY-MM-DDThh:mm:ss`.
+You send `<lastUpdatedTime />` on all 16. The Excel (row 69) marks it **Mandatory**. Put the real last-updated time, in the format `YYYY-MM-DdTHH:mm:sszzz`.
 
 **6. `cardiologyReport > type > textDescription` is empty.**
 You send `<textDescription />` while the `type` code is filled (code `2`). When the code is present, the Excel (row 104) makes the description Mandatory. Put the description text (e.g. the procedure category name), or drop the whole `type` block if there is nothing to send.
 
 **7. Date-time format on the report dates.**
-`startDateTime` and `reportDateTime` are sent as `2026-09-01T19:02:04.2381552+08:00` — with fractional seconds and a timezone. The Excel (rows 92, 93) format is `CCYY-MM-DDThh:mm:ss` — no fractional seconds, no timezone. Remove the `.2381552` and the `+08:00`. Also check these should be the **real** report times, not the send time (all currently show `19:02`).
+`startDateTime` and `reportDateTime` are sent as `2026-09-01T19:02:04.2381552+08:00` — with fractional seconds and a timezone. The Excel (rows 92, 93) format is `YYYY-MM-DdTHH:mm:sszzz` — no fractional seconds, no timezone. Remove the `.2381552` and the `+08:00`. Also check these should be the **real** report times, not the send time (all currently show `19:02`).
 
 **8. Do not send empty tags.**
 Empty tags to remove: `<lastUpdatedTime />` (fix 5 — fill instead), `<textDescription />` in the report type (fix 6), and the patient block empties below. The Readme says: no value → delete the tag (unless Mandatory, then fill it).

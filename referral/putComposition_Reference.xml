@@ -60,7 +60,7 @@
 	</patient>
 	<composition>
 		<identifier>064e86ee-bed8-4043-a504-335ddcc98c4e1</identifier>
-		<!-- Template format CCYY-MM-DDThh:mm:ss+08:00 — whole seconds. The source emits 7-digit
+		<!-- Template format YYYY-MM-DdTHH:mm:sszzz+08:00 — whole seconds. The source emits 7-digit
 		     fractional seconds (…58.6675902+08:00). -->
 		<date>2026-08-19T18:28:58+08:00</date>
 		<createdDate>2026-08-19T18:28:58+08:00</createdDate>
